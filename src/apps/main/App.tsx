@@ -389,6 +389,63 @@ export default function MahjongTracker() {
       setSuccessMsg('配置已导入！');
     } catch (err: any) {
       setErrorMsg('导入失败：' + err.message);
+    } finally {
+      event.target.value = '';
+    }
+  }, []);
+
+  // 导出完整备份
+  const handleExportFull = useCallback(() => {
+    const backup = {
+      version: '1.0',
+      type: 'full_backup',
+      exportDate: new Date().toISOString(),
+      whitelist,
+      mergeRules,
+      filterOptions,
+      transactions,
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `maja-full-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    setSuccessMsg('完整备份已导出！');
+  }, [whitelist, mergeRules, filterOptions, transactions]);
+
+  // 导入完整备份
+  const handleImportFull = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const backup = JSON.parse(text);
+      
+      if (!backup.version || backup.type !== 'full_backup' || !backup.transactions) {
+        setErrorMsg('不是有效的完整备份文件，请检查文件格式。');
+        return;
+      }
+
+      if (confirm(`即将恢复 ${backup.transactions.length} 条交易记录并覆盖现有配置，确定吗？此操作将清空当前所有数据。`)) {
+        setWhitelist(backup.whitelist || []);
+        setMergeRules(backup.mergeRules || []);
+        if (backup.filterOptions) {
+          setFilterOptions(backup.filterOptions);
+        }
+        setTransactions(backup.transactions);
+        setSuccessMsg('完整备份恢复成功！');
+      }
+    } catch (err: any) {
+      setErrorMsg('恢复失败：' + err.message);
+    } finally {
+      event.target.value = '';
     }
   }, []);
 
@@ -454,20 +511,41 @@ export default function MahjongTracker() {
           {/* 导出配置按钮 */}
           <button 
             onClick={handleExportConfig}
-            className="w-full py-2.5 text-sm bg-emerald-50 text-emerald-600 font-medium rounded-xl hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
           >
             <Download size={16} />
             导出配置
           </button>
           
           {/* 导入配置按钮 */}
-          <label className="w-full py-2.5 text-sm bg-blue-50 text-blue-600 font-medium rounded-xl hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+          <label className="w-full py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 cursor-pointer mb-2">
             <Upload size={16} />
             导入配置
             <input
               type="file"
               accept=".json"
               onChange={handleImportConfig}
+              className="hidden"
+            />
+          </label>
+
+          {/* 导出完整备份 */}
+          <button 
+            onClick={handleExportFull}
+            className="w-full py-2.5 text-sm bg-emerald-50 text-emerald-600 font-medium rounded-xl hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+          >
+            <Download size={16} />
+            导出完整备份
+          </button>
+          
+          {/* 导入完整备份 */}
+          <label className="w-full py-2.5 text-sm bg-blue-50 text-blue-600 font-medium rounded-xl hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+            <Upload size={16} />
+            恢复完整备份
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportFull}
               className="hidden"
             />
           </label>
@@ -512,6 +590,7 @@ export default function MahjongTracker() {
             <Dashboard
               stats={stats}
               normalizedTransactions={pipelineResult.final}
+              dailyStats={dailyStats}
               onFileUpload={handleFileUpload}
               fileInputRef={fileInputRef}
               isUploading={isUploading}

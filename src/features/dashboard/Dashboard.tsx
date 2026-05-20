@@ -1,17 +1,30 @@
 import React from 'react';
-import { Calendar, DollarSign, TrendingUp, TrendingDown, Award, Frown, PieChart, Shield } from 'lucide-react';
-import type { Stats, Transaction } from '../../types';
+import { Calendar, DollarSign, TrendingUp, TrendingDown, Award, Frown, PieChart, Shield, LineChart as LineChartIcon, FileText, Upload } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import type { Stats, Transaction, DailyStat } from '../../types';
 
 interface DashboardProps {
   stats: Stats;
   normalizedTransactions: Transaction[];
+  dailyStats: Record<string, DailyStat>;
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   isUploading: boolean;
   whitelistCount: number;
 }
 
-export function Dashboard({ stats, normalizedTransactions, onFileUpload, fileInputRef, isUploading, whitelistCount }: DashboardProps) {
+export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpload, fileInputRef, isUploading, whitelistCount }: DashboardProps) {
+  const chartData = React.useMemo(() => {
+    return Object.entries(dailyStats)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, stat]) => ({
+        date: date.substring(5), // MM-DD
+        net: Number(stat.net.toFixed(2)),
+      }));
+  }, [dailyStats]);
+
+  const isEmpty = normalizedTransactions.length === 0;
+
   return (
     <div className="space-y-6 animate-in fade-in">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -45,9 +58,28 @@ export function Dashboard({ stats, normalizedTransactions, onFileUpload, fileInp
         </div>
       </header>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-sm relative overflow-hidden text-white">
+      {isEmpty ? (
+        <div className="bg-white rounded-3xl border border-dashed border-gray-200 p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
+          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mb-6">
+            <FileText size={40} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">暂无交易记录</h3>
+          <p className="text-gray-500 max-w-md mb-8 leading-relaxed">
+            你还没有导入任何账单。点击右上角的“导入账单文件”按钮，上传微信或支付宝导出的 Excel/CSV 文件，开始你的雀神记账之旅吧！
+          </p>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200/50 flex items-center gap-2"
+          >
+            <Upload size={18} />
+            立即导入
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-sm relative overflow-hidden text-white">
           <div className="absolute top-4 right-4 bg-white/20 p-2 rounded-full text-white">
             <Calendar size={24} />
           </div>
@@ -94,6 +126,35 @@ export function Dashboard({ stats, normalizedTransactions, onFileUpload, fileInp
             <span className="text-3xl font-bold text-gray-900">-{stats.totalLoss.toFixed(2)}</span>
             <span className="text-gray-400 font-medium">元</span>
           </div>
+        </div>
+      </div>
+
+      {/* 每日趋势图表 */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mt-6 mb-6">
+        <div className="flex items-center gap-2 mb-6">
+          <LineChartIcon size={20} className="text-emerald-500" />
+          <h3 className="text-lg font-bold text-gray-900">每日盈亏趋势</h3>
+        </div>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                formatter={(value: any) => [`${value > 0 ? '+' : ''}${value} 元`, '净盈亏']}
+              />
+              <Line
+                type="monotone"
+                dataKey="net"
+                stroke="#10b981"
+                strokeWidth={3}
+                dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -202,6 +263,8 @@ export function Dashboard({ stats, normalizedTransactions, onFileUpload, fileInp
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
