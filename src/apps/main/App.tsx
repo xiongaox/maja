@@ -455,7 +455,7 @@ export default function MahjongTracker() {
       const timer = setTimeout(() => {
         setSuccessMsg('');
         setErrorMsg('');
-      }, 5000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [successMsg, errorMsg]);
