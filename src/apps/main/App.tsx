@@ -403,7 +403,7 @@ export default function MahjongTracker() {
       whitelist,
       mergeRules,
       filterOptions,
-      transactions,
+      transactions: pipelineResult.final, // 只导出经过所有清洗（金额、类型、白名单）后的最终数据
     };
     
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -417,7 +417,7 @@ export default function MahjongTracker() {
     URL.revokeObjectURL(url);
     
     setSuccessMsg('完整备份已导出！');
-  }, [whitelist, mergeRules, filterOptions, transactions]);
+  }, [whitelist, mergeRules, filterOptions, pipelineResult.final]);
 
   // 导入完整备份
   const handleImportFull = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
