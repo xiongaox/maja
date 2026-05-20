@@ -408,8 +408,7 @@ export function DataConfig({
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-sm hover:bg-emerald-100 hover:border-emerald-300'
                         : 'bg-slate-50 text-slate-400 border border-slate-200 opacity-70 hover:opacity-100 hover:bg-slate-100'
                     }`}>
-                    <Check size={14} className={item.enabled ? 'text-emerald-500' : 'text-transparent'} strokeWidth={3} />
-                    <span className="font-medium ml-0.5">{item.name}</span>
+                    <span className="font-medium">{item.name}</span>
                     <button onClick={e => { e.stopPropagation(); onRemoveWhitelist(item.id); }}
                       className={`ml-1 p-1 rounded-md transition-colors ${
                         item.enabled 
