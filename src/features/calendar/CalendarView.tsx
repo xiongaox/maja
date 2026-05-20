@@ -1,0 +1,176 @@
+import React, { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2 } from 'lucide-react';
+import type { Transaction } from '../../types';
+
+interface CalendarViewProps {
+  dailyStats: Record<string, { net: number; win: number; loss: number; count: number; records: Transaction[] }>;
+  onRemoveTransaction: (id: string) => void;
+}
+
+const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewProps) {
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState(currentDate.getFullYear());
+
+  const renderCalendar = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = getDaysInMonth(year, month);
+    const firstDay = getFirstDayOfMonth(year, month);
+
+    const days = [];
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="h-20 md:h-28 bg-gray-50/50 rounded-xl border border-dashed border-gray-200"></div>);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayData = dailyStats[dateStr];
+      const isSelected = selectedDay === dateStr;
+
+      let amountSign = '';
+      let amountBadgeClass = '';
+
+      if (dayData && dayData.net !== 0) {
+        amountSign = dayData.net > 0 ? '+' : '';
+        amountBadgeClass = isSelected
+          ? 'text-white bg-white/20'
+          : (dayData.net > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50');
+      }
+
+      days.push(
+        <div
+          key={dateStr}
+          onClick={() => setSelectedDay(dateStr)}
+          className={`h-20 md:h-28 p-2 flex flex-col items-center justify-center relative cursor-pointer rounded-xl transition-all duration-200 shadow-sm hover:shadow-md
+            ${isSelected ? 'bg-emerald-500 text-white shadow-emerald-200 transform scale-[1.02] z-10' : 'bg-white hover:bg-emerald-50 border border-gray-100'}
+          `}
+        >
+          <span className={`text-lg md:text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
+            {day}
+          </span>
+          {dayData && (
+            <div className="absolute bottom-1.5 md:bottom-2 w-full px-1.5 flex justify-center">
+              <span className={`text-[10px] md:text-sm font-black tracking-tight px-1 py-0.5 rounded-md text-center truncate w-full ${amountBadgeClass}`}>
+                {amountSign}{dayData.net.toFixed(1)}
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return days;
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in">
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">战绩日历</h1>
+        <p className="text-gray-500 text-sm mt-1">查看每日盈亏与流水明细</p>
+      </header>
+
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-white rounded-full transition-colors text-gray-600 hover:shadow-sm">
+            <ChevronLeft size={20} />
+          </button>
+
+          <div className="relative group">
+            <button
+              onClick={() => { setPickerYear(currentDate.getFullYear()); setIsDatePickerOpen(!isDatePickerOpen); }}
+              className="flex items-center gap-2 text-lg font-bold text-gray-800 bg-transparent border border-transparent hover:border-gray-200 hover:bg-white px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+            >
+              <span>{currentDate.getFullYear()}年 {currentDate.getMonth() + 1}月</span>
+              <CalendarIcon size={16} className="text-gray-400" />
+            </button>
+
+            {isDatePickerOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-50">
+                    <button onClick={() => setPickerYear(y => y - 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronLeft size={18} /></button>
+                    <span className="font-bold text-gray-800">{pickerYear}年</span>
+                    <button onClick={() => setPickerYear(y => y + 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronRight size={18} /></button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {Array.from({ length: 12 }, (_, i) => i).map(m => {
+                      const isCurrentMonth = currentDate.getFullYear() === pickerYear && currentDate.getMonth() === m;
+                      return (
+                        <button key={m} onClick={() => { setCurrentDate(new Date(pickerYear, m, 1)); setIsDatePickerOpen(false); }}
+                          className={`py-2 rounded-xl text-sm font-medium transition-all ${isCurrentMonth ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200 scale-105' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                        >
+                          {m + 1}月
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-white rounded-full transition-colors text-gray-600 hover:shadow-sm">
+            <ChevronRight size={20} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-7 gap-px bg-gray-100 text-center">
+          {['日', '一', '二', '三', '四', '五', '六'].map(day => (
+            <div key={day} className="bg-white py-3 text-xs font-bold text-gray-400">{day}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1 p-2 bg-gray-50/50">
+          {renderCalendar()}
+        </div>
+      </div>
+
+      {selectedDay && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 animate-in slide-in-from-bottom-4">
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+            <h3 className="text-lg font-bold text-gray-800">{selectedDay} 明细</h3>
+            <div className="text-sm font-medium">
+              当日净盈亏:
+              <span className={`ml-2 text-lg font-bold ${dailyStats[selectedDay]?.net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {dailyStats[selectedDay] ? (dailyStats[selectedDay].net > 0 ? '+' : '') + dailyStats[selectedDay].net.toFixed(2) : '0.00'}
+              </span>
+            </div>
+          </div>
+
+          {dailyStats[selectedDay]?.records?.length > 0 ? (
+            <div className="space-y-3">
+              {dailyStats[selectedDay].records.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${tx.amount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}>
+                      {(tx.displayName || tx.name).charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800">{tx.displayName || tx.name}</p>
+                      <p className="text-xs text-gray-400">{tx.date.split(' ')[1]}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`font-bold text-lg ${tx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)}
+                    </span>
+                    <button onClick={() => onRemoveTransaction(tx.id)} className="text-gray-300 hover:text-rose-500 transition-colors"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <History size={32} className="mx-auto mb-2 opacity-30" />
+              <p>这一天没有打麻将哦</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
