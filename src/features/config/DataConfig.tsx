@@ -81,9 +81,9 @@ export function DataConfig({
   // 搭子合并 tab 状态
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editingTargetName, setEditingTargetName] = useState('');
-  // 点击白名单名字后，等待输入备注名
-  const [pendingWhitelistName, setPendingWhitelistName] = useState<string | null>(null);
-  const [pendingNickname, setPendingNickname] = useState('');
+  // 新建空组
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
   
   // 拖拽相关状态
   const [draggedItemName, setDraggedItemName] = useState<string | null>(null);
@@ -98,12 +98,12 @@ export function DataConfig({
     if (newName.trim()) { onAddWhitelist(newName.trim()); setNewName(''); }
   };
 
-  // 确认备注名 → 创建新备注组
-  const handleConfirmNickname = () => {
-    if (!pendingWhitelistName || !pendingNickname.trim()) return;
-    onAddMergeRule(pendingNickname.trim(), pendingWhitelistName);
-    setPendingWhitelistName(null);
-    setPendingNickname('');
+  // 确认创建新备注组
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim()) return;
+    onEnsureMergeRule(newGroupName.trim());
+    setIsCreatingGroup(false);
+    setNewGroupName('');
   };
 
   const tabs: Array<{ id: string; label: string; icon: React.ElementType; count?: number }> = [
@@ -238,8 +238,44 @@ export function DataConfig({
         {activeTab === 'merge' && (
           <div className="flex flex-col min-h-[400px] animate-in fade-in slide-in-from-bottom-2">
 
+            <div className="flex items-center justify-between px-4 pt-4 md:px-6">
+              <h2 className="font-semibold text-gray-800">所有备注组</h2>
+              {!isCreatingGroup && (
+                <button
+                  onClick={() => setIsCreatingGroup(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors">
+                  <Plus size={16} />
+                  新建空组
+                </button>
+              )}
+            </div>
+
+            {isCreatingGroup && (
+              <div className="mx-4 md:mx-6 p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl flex items-center gap-3 shadow-inner">
+                <input
+                  autoFocus
+                  placeholder="输入新备注名（如：阿喵）回车确认…"
+                  value={newGroupName}
+                  onChange={e => setNewGroupName(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleCreateGroup();
+                    if (e.key === 'Escape') { setIsCreatingGroup(false); setNewGroupName(''); }
+                  }}
+                  className="flex-1 px-4 py-2 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/30 text-gray-800 text-sm font-medium"
+                />
+                <button onClick={handleCreateGroup} disabled={!newGroupName.trim()}
+                  className="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-colors">
+                  创建
+                </button>
+                <button onClick={() => { setIsCreatingGroup(false); setNewGroupName(''); }}
+                  className="px-3 py-2 text-gray-400 hover:text-gray-600 transition-colors">
+                  取消
+                </button>
+              </div>
+            )}
+
             {/* 已创建的备注组列表（上方主区域） */}
-            <div className="flex-1 p-4 md:p-6 space-y-3">
+            <div className="flex-1 px-4 pb-4 md:px-6 space-y-3">
               {mergeRules.length > 0 ? mergeRules.map(rule => {
                 const isEditing = editingRuleId === rule.id;
                 return (
@@ -361,51 +397,14 @@ export function DataConfig({
                   <div className="flex flex-wrap gap-2">
                     {unassigned.map(item => (
                       <div key={item.id}>
-                        {pendingWhitelistName === item.name ? (
-                          /* 展开卡片：输入备注名 */
-                          <div className="flex flex-col gap-2.5 p-3 bg-white border border-emerald-200 rounded-2xl shadow-lg min-w-[260px]">
-                            <div className="flex items-center gap-2 text-xs text-slate-400">
-                              <span className="font-semibold text-slate-700 text-sm">{item.name}</span>
-                              <ArrowRight size={13} className="text-emerald-400" />
-                              <span>备注名</span>
-                            </div>
-                            <input
-                              autoFocus
-                              placeholder="输入备注名，回车确认（如：阿喵）"
-                              value={pendingNickname}
-                              onChange={e => setPendingNickname(e.target.value)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') handleConfirmNickname();
-                                if (e.key === 'Escape') { setPendingWhitelistName(null); setPendingNickname(''); }
-                              }}
-                              className="text-sm font-semibold text-gray-800 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 bg-gray-50 placeholder-gray-300"
-                            />
-                            {/* 删除旧的“或归入已有备注组”因为有了拖拽功能 */}
-                            <div className="flex gap-2 pt-0.5">
-                              <button
-                                onClick={handleConfirmNickname}
-                                disabled={!pendingNickname.trim()}
-                                className="flex-1 py-1.5 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-40 transition-colors">
-                                创建备注组
-                              </button>
-                              <button
-                                onClick={() => { setPendingWhitelistName(null); setPendingNickname(''); }}
-                                className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
-                                取消
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            draggable
-                            onDragStart={() => setDraggedItemName(item.name)}
-                            onDragEnd={() => setDraggedItemName(null)}
-                            onClick={() => { setPendingWhitelistName(item.name); setPendingNickname(''); }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-md transition-all cursor-grab active:cursor-grabbing">
-                            <Plus size={13} />
-                            {item.name}
-                          </button>
-                        )}
+                        <button
+                          draggable
+                          onDragStart={() => setDraggedItemName(item.name)}
+                          onDragEnd={() => setDraggedItemName(null)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-md transition-all cursor-grab active:cursor-grabbing">
+                          <Plus size={13} />
+                          {item.name}
+                        </button>
                       </div>
                     ))}
                   </div>
