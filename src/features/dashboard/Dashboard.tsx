@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, DollarSign, TrendingUp, TrendingDown, Award, Frown, PieChart, Shield, LineChart as LineChartIcon, FileText, Upload } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import type { Stats, Transaction, DailyStat } from '../../types';
 
 interface DashboardProps {
@@ -20,6 +20,8 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
       .map(([date, stat]) => ({
         date: date.substring(5), // MM-DD
         net: Number(stat.net.toFixed(2)),
+        win: Number(stat.win.toFixed(2)),
+        loss: Number(stat.loss.toFixed(2)),
       }));
   }, [dailyStats]);
 
@@ -129,11 +131,11 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
         </div>
       </div>
 
-      {/* 每日趋势图表 */}
+      {/* 战绩走势图表 */}
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mt-6 mb-6">
         <div className="flex items-center gap-2 mb-6">
           <LineChartIcon size={20} className="text-emerald-500" />
-          <h3 className="text-lg font-bold text-gray-900">每日盈亏趋势</h3>
+          <h3 className="text-lg font-bold text-gray-900">战绩走势</h3>
         </div>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -143,14 +145,25 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
               <Tooltip
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                formatter={(value: any) => [`${value > 0 ? '+' : ''}${value} 元`, '净盈亏']}
+                formatter={(value: any, name: string) => [`${value} 元`, name]}
               />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
               <Line
+                name="收入"
                 type="monotone"
-                dataKey="net"
+                dataKey="win"
                 stroke="#10b981"
                 strokeWidth={3}
                 dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+              />
+              <Line
+                name="支出"
+                type="monotone"
+                dataKey="loss"
+                stroke="#f43f5e"
+                strokeWidth={3}
+                dot={{ r: 4, fill: '#f43f5e', strokeWidth: 0 }}
                 activeDot={{ r: 6, strokeWidth: 0 }}
               />
             </LineChart>

@@ -571,16 +571,16 @@ export default function MahjongTracker() {
       {/* 主内容区 */}
       <main className="flex-1 overflow-y-auto w-full relative">
         <div className="max-w-6xl mx-auto p-4 md:p-8 pb-24">
-          {/* 全局提示 */}
-          <div className="mb-6 space-y-2">
+          {/* 全局提示 (Toast) */}
+          <div className="fixed top-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
             {errorMsg && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-600 p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                <AlertCircle size={20} className="flex-shrink-0" /> <p className="text-sm">{errorMsg}</p>
+              <div className="bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-xl flex items-center gap-3 shadow-lg animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-auto min-w-[300px]">
+                <AlertCircle size={20} className="flex-shrink-0" /> <p className="text-sm font-medium">{errorMsg}</p>
               </div>
             )}
             {successMsg && (
-              <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                <CheckCircle2 size={20} className="flex-shrink-0" /> <p className="text-sm">{successMsg}</p>
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-3 rounded-xl flex items-center gap-3 shadow-lg animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-auto min-w-[300px]">
+                <CheckCircle2 size={20} className="flex-shrink-0" /> <p className="text-sm font-medium">{successMsg}</p>
               </div>
             )}
           </div>
