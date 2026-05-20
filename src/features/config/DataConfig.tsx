@@ -38,26 +38,25 @@ interface DataConfigProps {
 
 function PipelineVisualization({ stats }: { stats: DataConfigProps['stats'] }) {
   const steps = [
-    { label: '原始记录', count: stats.rawCount, color: 'bg-gray-100' },
-    { label: '筛选后', count: stats.afterFilter, color: 'bg-blue-100' },
-    { label: '合并后', count: stats.afterMerge, color: 'bg-purple-100' },
-    { label: '最终显示', count: stats.afterWhitelist, color: 'bg-emerald-100' },
+    { label: '原始记录', count: stats.rawCount, color: 'bg-slate-50 border-slate-100', textCol: 'text-slate-800' },
+    { label: '筛选后', count: stats.afterFilter, color: 'bg-slate-50 border-slate-100', textCol: 'text-slate-800' },
+    { label: '合并后', count: stats.afterMerge, color: 'bg-slate-50 border-slate-100', textCol: 'text-slate-800' },
+    { label: '最终显示', count: stats.afterWhitelist, color: 'bg-emerald-50 border-emerald-100 ring-1 ring-emerald-500/10', textCol: 'text-emerald-700' },
   ];
   return (
-    <div className="bg-gradient-to-r from-emerald-50/50 to-blue-50/50 rounded-2xl p-5 border border-emerald-100/50 shadow-sm relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-blue-400 opacity-50"></div>
+    <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
       <div className="flex items-center gap-2 mb-4">
         <Zap size={18} className="text-emerald-500 drop-shadow-sm" />
-        <span className="font-bold text-gray-800 text-lg">数据处理流程</span>
+        <span className="font-bold text-slate-800 text-lg">数据处理流程</span>
       </div>
       <div className="grid grid-cols-2 md:flex md:items-center md:justify-between gap-2 md:gap-3">
         {steps.map((step, index) => (
           <React.Fragment key={step.label}>
-            <div className={`flex-1 ${step.color} rounded-xl px-3 py-2 md:px-4 md:py-3 text-center shadow-sm border border-white/50 backdrop-blur-sm transition-transform hover:scale-105`}>
-              <div className="text-xl md:text-2xl font-black text-gray-800 drop-shadow-sm">{step.count}</div>
-              <div className="text-xs md:text-sm font-medium text-gray-600 mt-0.5">{step.label}</div>
+            <div className={`flex-1 ${step.color} rounded-xl px-3 py-2 md:px-4 md:py-3 text-center border transition-all hover:-translate-y-0.5 hover:shadow-md`}>
+              <div className={`text-xl md:text-2xl font-black drop-shadow-sm ${step.textCol}`}>{step.count}</div>
+              <div className="text-xs md:text-sm font-medium text-slate-500 mt-0.5">{step.label}</div>
             </div>
-            {index < steps.length - 1 && <ArrowRight size={20} className="hidden md:block text-gray-300 flex-shrink-0" />}
+            {index < steps.length - 1 && <ArrowRight size={20} className="hidden md:block text-slate-300 flex-shrink-0" />}
           </React.Fragment>
         ))}
       </div>
