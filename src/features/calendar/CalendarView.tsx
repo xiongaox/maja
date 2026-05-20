@@ -33,7 +33,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 bg-transparent"></div>);
+      days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 bg-slate-50/40 rounded-2xl border border-slate-100/50"></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -43,7 +43,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
       let amountSign = '';
       let amountBadgeClass = '';
-      let cellBgClass = 'bg-gray-50/50 border border-transparent hover:border-gray-200 hover:bg-gray-100/50';
+      let cellBgClass = 'bg-slate-50/80 border border-slate-100 hover:border-slate-300 hover:bg-slate-100/80';
 
       if (isSelected) {
         cellBgClass = 'bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-200/50 scale-105 z-10 border-transparent';
