@@ -395,6 +395,16 @@ export default function MahjongTracker() {
     }
   }, []);
 
+  // 清空配置
+  const handleClearConfig = useCallback(() => {
+    if (confirm('确定要清空所有配置（白名单、合并规则、筛选条件）吗？此操作不可撤销。')) {
+      setWhitelist([]);
+      setMergeRules([]);
+      setFilterOptions(DEFAULT_FILTER_OPTIONS);
+      setSuccessMsg('配置已清空');
+    }
+  }, []);
+
   // 导出完整备份
   const handleExportFull = useCallback(() => {
     const backup = {
@@ -511,13 +521,22 @@ export default function MahjongTracker() {
 
         <div className="p-4 border-t border-gray-100 space-y-2">
           {/* 导出配置按钮 */}
-          <button 
-            onClick={handleExportConfig}
-            className="w-full py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
-          >
-            <Download size={16} />
-            导出配置
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleExportConfig}
+              className="flex-1 py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+            >
+              <Download size={16} />
+              导出配置
+            </button>
+            <button 
+              onClick={handleClearConfig}
+              className="px-4 py-2.5 text-sm bg-rose-50 text-rose-600 font-medium rounded-xl hover:bg-rose-100 transition-colors flex items-center justify-center"
+              title="清空配置"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
           
           {/* 导入配置按钮 */}
           <label className="w-full py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 cursor-pointer mb-2">
