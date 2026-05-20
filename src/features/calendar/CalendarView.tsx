@@ -43,33 +43,35 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
       let amountSign = '';
       let amountBadgeClass = '';
-      let cellBgClass = 'bg-white border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5';
+      let cellBgClass = 'bg-gray-50/50 border border-transparent hover:border-gray-200 hover:bg-gray-100/50';
 
       if (isSelected) {
-        cellBgClass = 'bg-emerald-500 shadow-lg shadow-emerald-200/50 scale-105 z-10 border-transparent';
+        cellBgClass = 'bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-200/50 scale-105 z-10 border-transparent';
       } else if (dayData) {
-        cellBgClass = dayData.net >= 0 ? 'bg-emerald-50/80 border-emerald-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-emerald-100/50' : 'bg-rose-50/80 border-rose-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-rose-100/50';
+        cellBgClass = dayData.net >= 0 
+          ? 'bg-emerald-50/80 border border-emerald-100/50 hover:bg-emerald-100/50 hover:border-emerald-200 shadow-sm' 
+          : 'bg-rose-50/80 border border-rose-100/50 hover:bg-rose-100/50 hover:border-rose-200 shadow-sm';
       }
 
       if (dayData && dayData.net !== 0) {
         amountSign = dayData.net > 0 ? '+' : '';
         amountBadgeClass = isSelected
-          ? 'text-emerald-100 bg-black/10'
-          : (dayData.net > 0 ? 'text-emerald-700 bg-white/60' : 'text-rose-700 bg-white/60');
+          ? 'text-emerald-50 bg-black/10'
+          : (dayData.net > 0 ? 'text-emerald-600 bg-white shadow-sm' : 'text-rose-600 bg-white shadow-sm');
       }
 
       days.push(
         <div
           key={dateStr}
           onClick={() => setSelectedDay(dateStr)}
-          className={`h-16 sm:h-20 md:h-24 p-1 md:p-2 flex flex-col items-center justify-start pt-1.5 md:pt-3 relative cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
+          className={`h-16 sm:h-20 md:h-28 p-1 md:p-2 flex flex-col items-center justify-start pt-2 md:pt-4 relative cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
         >
-          <span className={`text-sm md:text-xl font-bold ${isSelected ? 'text-white' : (dayData ? 'text-gray-900' : 'text-gray-400')}`}>
+          <span className={`text-sm md:text-xl font-bold ${isSelected ? 'text-white' : (dayData ? 'text-gray-900' : 'text-gray-500')}`}>
             {day}
           </span>
           {dayData && (
-            <div className="mt-auto mb-0.5 md:mb-1 w-full flex justify-center">
-              <span className={`text-[9px] sm:text-[10px] md:text-xs font-black tracking-tighter sm:tracking-normal px-1 sm:px-1.5 py-0.5 rounded-lg text-center truncate max-w-[95%] shadow-sm ${amountBadgeClass}`}>
+            <div className="mt-auto mb-1 md:mb-2 w-full flex justify-center">
+              <span className={`text-[10px] md:text-sm font-black tracking-tight px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-lg text-center truncate max-w-[95%] md:max-w-[80%] ${amountBadgeClass}`}>
                 {amountSign}{dayData.net.toFixed(1)}
               </span>
             </div>
@@ -83,67 +85,69 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">战绩日历</h1>
-          <p className="text-gray-500 text-sm mt-1">查看每日盈亏与流水明细</p>
-        </div>
-        
-        {/* 月份切换器 - 悬浮卡片式 */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-1.5 flex items-center gap-1 w-max">
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-600">
-            <ChevronLeft size={20} />
-          </button>
-
-          <div className="relative group">
-            <button
-              onClick={() => { setPickerYear(currentDate.getFullYear()); setIsDatePickerOpen(!isDatePickerOpen); }}
-              className="flex items-center gap-2 text-lg font-bold text-gray-800 hover:bg-gray-50 px-4 py-1.5 rounded-xl transition-all cursor-pointer"
-            >
-              <span>{currentDate.getFullYear()}年 {currentDate.getMonth() + 1}月</span>
-              <CalendarIcon size={16} className="text-gray-400" />
-            </button>
-
-            {isDatePickerOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-50">
-                    <button onClick={() => setPickerYear(y => y - 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronLeft size={18} /></button>
-                    <span className="font-bold text-gray-800">{pickerYear}年</span>
-                    <button onClick={() => setPickerYear(y => y + 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronRight size={18} /></button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {Array.from({ length: 12 }, (_, i) => i).map(m => {
-                      const isCurrentMonth = currentDate.getFullYear() === pickerYear && currentDate.getMonth() === m;
-                      return (
-                        <button key={m} onClick={() => { setCurrentDate(new Date(pickerYear, m, 1)); setIsDatePickerOpen(false); }}
-                          className={`py-2 rounded-xl text-sm font-medium transition-all ${isCurrentMonth ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200 scale-105' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
-                        >
-                          {m + 1}月
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-600">
-            <ChevronRight size={20} />
-          </button>
-        </div>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">战绩日历</h1>
+        <p className="text-gray-500 text-sm mt-1">查看每日盈亏与流水明细</p>
       </header>
 
-      {/* 悬浮网格日历 */}
-      <div className="w-full">
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3 text-center mb-2 px-1">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-4 md:p-6 lg:p-8">
+        {/* 头部控制区 */}
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 ml-2 tracking-tight">
+            {currentDate.getFullYear()}年 {currentDate.getMonth() + 1}月
+          </h2>
+          
+          <div className="bg-gray-50 rounded-xl border border-gray-100 p-1 flex items-center gap-1 relative">
+            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
+              <ChevronLeft size={20} />
+            </button>
+            
+            <div className="relative">
+              <button onClick={() => { setPickerYear(currentDate.getFullYear()); setIsDatePickerOpen(!isDatePickerOpen); }} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
+                <CalendarIcon size={20} />
+              </button>
+              
+              {isDatePickerOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
+                  <div className="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-50">
+                      <button onClick={() => setPickerYear(y => y - 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronLeft size={18} /></button>
+                      <span className="font-bold text-gray-800">{pickerYear}年</span>
+                      <button onClick={() => setPickerYear(y => y + 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronRight size={18} /></button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {Array.from({ length: 12 }, (_, i) => i).map(m => {
+                        const isCurrentMonth = currentDate.getFullYear() === pickerYear && currentDate.getMonth() === m;
+                        return (
+                          <button key={m} onClick={() => { setCurrentDate(new Date(pickerYear, m, 1)); setIsDatePickerOpen(false); }}
+                            className={`py-2 rounded-xl text-sm font-medium transition-all ${isCurrentMonth ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200 scale-105' : 'text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}`}
+                          >
+                            {m + 1}月
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* 星期表头 */}
+        <div className="grid grid-cols-7 gap-2 md:gap-4 text-center mb-2 md:mb-4">
           {['日', '一', '二', '三', '四', '五', '六'].map((day, idx) => (
-            <div key={day} className={`py-1 text-xs font-black tracking-widest ${idx === 0 || idx === 6 ? 'text-gray-400' : 'text-gray-500'}`}>{day}</div>
+            <div key={day} className={`text-xs md:text-sm font-black tracking-widest ${idx === 0 || idx === 6 ? 'text-gray-400' : 'text-gray-500'}`}>{day}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
+        
+        {/* 日历网格 */}
+        <div className="grid grid-cols-7 gap-2 md:gap-4">
           {renderCalendar()}
         </div>
       </div>
