@@ -40,7 +40,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           </p>
         </div>
 
-        <div className="relative group w-full md:w-auto">
+        <div className={isEmpty ? "hidden" : "relative group w-full md:w-auto"}>
           <input
             type="file"
             multiple
