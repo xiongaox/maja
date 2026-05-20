@@ -73,6 +73,29 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
         </p>
       </header>
 
+      {/* 数据汇总 */}
+      <div className="mb-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+            <BarChart2 size={20} />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总交易笔数</p>
+            <p className="text-xl font-black text-gray-800">{normalizedTransactions.length}</p>
+          </div>
+        </div>
+        <div className="h-10 w-px bg-gray-100 hidden md:block" />
+        <div>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">交锋人数</p>
+          <p className="text-xl font-black text-gray-800">{Object.keys(stats.playerStats).length}</p>
+        </div>
+        <div className="h-10 w-px bg-gray-100 hidden md:block" />
+        <div>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总流水</p>
+          <p className="text-xl font-black text-gray-800">{(stats.totalWin + stats.totalLoss).toFixed(2)}</p>
+        </div>
+      </div>
+
       {/* 称号荣誉区 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-2xl shadow-lg shadow-orange-200/50 flex items-center gap-6 text-white relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-default">
@@ -113,8 +136,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
         {/* 财神榜 */}
         <div>
-          <div className="flex items-center gap-2 mb-4 px-2">
-            <Crown size={20} className="text-amber-500" />
+          <div className="mb-4 px-2">
             <h3 className="text-lg font-black text-gray-800">👑 财神榜 <span className="text-sm font-medium text-gray-400 font-normal ml-2">盈利玩家</span></h3>
           </div>
           <div className="space-y-3">
@@ -130,8 +152,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
 
         {/* 散财榜 */}
         <div>
-          <div className="flex items-center gap-2 mb-4 px-2">
-            <Ghost size={20} className="text-gray-500" />
+          <div className="mb-4 px-2">
             <h3 className="text-lg font-black text-gray-800">💀 散财榜 <span className="text-sm font-medium text-gray-400 font-normal ml-2">亏损玩家</span></h3>
           </div>
           <div className="space-y-3">
@@ -146,28 +167,6 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
         </div>
       </div>
 
-      {/* 数据汇总 */}
-      <div className="mt-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
-            <BarChart2 size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总交易笔数</p>
-            <p className="text-xl font-black text-gray-800">{normalizedTransactions.length}</p>
-          </div>
-        </div>
-        <div className="h-10 w-px bg-gray-100 hidden md:block" />
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">交锋人数</p>
-          <p className="text-xl font-black text-gray-800">{Object.keys(stats.playerStats).length}</p>
-        </div>
-        <div className="h-10 w-px bg-gray-100 hidden md:block" />
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总流水</p>
-          <p className="text-xl font-black text-gray-800">{(stats.totalWin + stats.totalLoss).toFixed(2)}</p>
-        </div>
-      </div>
     </div>
   );
 }
