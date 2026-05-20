@@ -29,10 +29,12 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
         <div className="flex items-start justify-between mb-3 relative z-10">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-black shrink-0 shadow-inner
-              ${isWinner ? 'bg-gradient-to-br from-amber-100 to-yellow-200 text-amber-700' : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600'}`}>
-              {player.name.charAt(0)}
-            </div>
+            <img
+              src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=transparent`}
+              alt={player.name}
+              className={`w-10 h-10 rounded-full flex-shrink-0 shadow-inner
+                ${isWinner ? 'bg-gradient-to-br from-amber-100 to-yellow-200' : 'bg-gradient-to-br from-gray-100 to-gray-200'}`}
+            />
             <div>
               <h4 className="font-bold text-gray-800 leading-tight">{player.name}</h4>
               <p className="text-xs text-gray-400 font-medium mt-0.5">

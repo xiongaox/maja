@@ -179,9 +179,11 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
               {dailyStats[selectedDay].records.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${tx.amount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}>
-                      {(tx.displayName || tx.name).charAt(0)}
-                    </div>
+                    <img
+                      src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(tx.displayName || tx.name)}&backgroundColor=transparent`}
+                      alt={tx.displayName || tx.name}
+                      className={`w-10 h-10 rounded-full flex-shrink-0 shadow-sm ${tx.amount > 0 ? 'bg-emerald-100' : 'bg-rose-100'}`}
+                    />
                     <div>
                       <p className="font-bold text-gray-800">{tx.displayName || tx.name}</p>
                       <p className="text-xs text-gray-400">{tx.date.split(' ')[1]}</p>
