@@ -33,7 +33,10 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 bg-gray-50/30"></div>);
+      // 增加条纹样式的空网格
+      days.push(
+        <div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 opacity-40 bg-[repeating-linear-gradient(-45deg,#f3f4f6,#f3f4f6_8px,transparent_8px,transparent_16px)]"></div>
+      );
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -43,21 +46,27 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
       let amountSign = '';
       let amountBadgeClass = '';
+      let cellBgClass = 'bg-white hover:bg-gray-50';
+
+      if (isSelected) {
+        cellBgClass = 'bg-gradient-to-b from-emerald-400 to-emerald-500 shadow-inner z-10 ring-2 ring-emerald-400 ring-offset-1';
+      } else if (dayData) {
+        // 如果有数据，增加极淡的背景色
+        cellBgClass = dayData.net >= 0 ? 'bg-emerald-50/40 hover:bg-emerald-50' : 'bg-rose-50/40 hover:bg-rose-50';
+      }
 
       if (dayData && dayData.net !== 0) {
         amountSign = dayData.net > 0 ? '+' : '';
         amountBadgeClass = isSelected
-          ? 'text-white bg-white/20'
-          : (dayData.net > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50');
+          ? 'text-emerald-50 bg-black/10 shadow-inner'
+          : (dayData.net > 0 ? 'text-emerald-600 bg-emerald-100/60 shadow-sm shadow-emerald-100/30' : 'text-rose-600 bg-rose-100/60 shadow-sm shadow-rose-100/30');
       }
 
       days.push(
         <div
           key={dateStr}
           onClick={() => setSelectedDay(dateStr)}
-          className={`h-16 sm:h-20 md:h-28 p-0.5 sm:p-1 md:p-2 flex flex-col items-center justify-start pt-1 md:pt-2 relative cursor-pointer transition-all duration-200
-            ${isSelected ? 'bg-emerald-500 shadow-inner z-10' : 'bg-white hover:bg-emerald-50'}
-          `}
+          className={`h-16 sm:h-20 md:h-28 p-0.5 sm:p-1 md:p-2 flex flex-col items-center justify-start pt-1 md:pt-2 relative cursor-pointer transition-all duration-300 ${cellBgClass}`}
         >
           <span className={`text-sm md:text-xl font-bold ${isSelected ? 'text-white' : (dayData ? 'text-gray-900' : 'text-gray-400')}`}>
             {day}
@@ -129,8 +138,8 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
         </div>
 
         <div className="grid grid-cols-7 gap-px bg-gray-100 text-center border-b border-gray-100">
-          {['日', '一', '二', '三', '四', '五', '六'].map(day => (
-            <div key={day} className="bg-white py-3 text-xs font-bold text-gray-400">{day}</div>
+          {['日', '一', '二', '三', '四', '五', '六'].map((day, idx) => (
+            <div key={day} className={`bg-gray-50/80 py-3 text-xs font-black tracking-widest ${idx === 0 || idx === 6 ? 'text-gray-400' : 'text-gray-500'}`}>{day}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-px bg-gray-100">
