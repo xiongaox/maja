@@ -352,7 +352,7 @@ export function DataConfig({
                           </span>
                         ))}
                         {rule.aliases.length === 0 && (
-                          <span className="text-xs text-emerald-600/50 italic py-1 px-1">拖拽下方成员到此处...</span>
+                          <span className="text-xs text-gray-400 italic py-1 px-1">拖拽下方成员到此处...</span>
                         )}
                       </div>
                     )}
