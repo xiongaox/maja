@@ -196,7 +196,7 @@ export function DataConfig({
                         : [...filterOptions.directionTypes, value];
                       onFilterChange({ ...filterOptions, directionTypes: newDirs });
                     }}
-                    className={`px-6 py-3 rounded-xl font-medium transition-all shadow-sm ${
+                    className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
                       filterOptions.directionTypes.includes(value)
                         ? color === 'emerald'
                           ? 'bg-emerald-500 text-white border-2 border-transparent scale-[1.02]'
