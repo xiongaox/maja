@@ -76,6 +76,7 @@ export function DataConfig({
   const [searchTerm, setSearchTerm] = useState('');
   const [targetName, setTargetName] = useState('');
   const [aliasName, setAliasName] = useState('');
+  const [aliasError, setAliasError] = useState('');
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
   const [expandedRule, setExpandedRule] = useState<string | null>(null);
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
@@ -89,10 +90,21 @@ export function DataConfig({
   const handleAddWhitelist = () => {
     if (newName.trim()) { onAddWhitelist(newName.trim()); setNewName(''); }
   };
+  const validateAndAddAlias = (tName: string, aName: string) => {
+    if (!originalNames.includes(aName)) {
+      setAliasError(`添加失败：原名称 "${aName}" 在导入的账单数据中不存在。`);
+      return false;
+    }
+    onAddMergeRule(tName, aName);
+    setAliasError('');
+    return true;
+  };
+
   const handleAddMergeRule = () => {
     if (targetName.trim() && aliasName.trim()) {
-      onAddMergeRule(targetName.trim(), aliasName.trim());
-      setTargetName(''); setAliasName('');
+      if (validateAndAddAlias(targetName.trim(), aliasName.trim())) {
+        setTargetName(''); setAliasName('');
+      }
     }
   };
 
@@ -227,19 +239,27 @@ export function DataConfig({
         {activeTab === 'merge' && (
           <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
             {/* 添加规则 */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input value={targetName} onChange={e => setTargetName(e.target.value)}
-                placeholder="目标名字 (如: 阿喵)"
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
-              <input value={aliasName} onChange={e => setAliasName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleAddMergeRule()}
-                placeholder="原名称 (如: 美味点)"
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
-              <button onClick={handleAddMergeRule} disabled={!targetName.trim() || !aliasName.trim()}
-                className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium">
-                <Plus size={18} />
-                <span>添加合并</span>
-              </button>
+            <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input value={targetName} onChange={e => { setTargetName(e.target.value); setAliasError(''); }}
+                  placeholder="目标名字 (如: 阿喵)"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
+                <input value={aliasName} onChange={e => { setAliasName(e.target.value); setAliasError(''); }}
+                  onKeyDown={e => e.key === 'Enter' && handleAddMergeRule()}
+                  placeholder="原名称 (如: 美味点)"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
+                <button onClick={handleAddMergeRule} disabled={!targetName.trim() || !aliasName.trim()}
+                  className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium">
+                  <Plus size={18} />
+                  <span>添加合并</span>
+                </button>
+              </div>
+              {aliasError && (
+                <div className="text-sm text-rose-500 flex items-center gap-1.5 px-1 animate-in slide-in-from-top-1">
+                  <X size={14} className="flex-shrink-0" />
+                  <span>{aliasError}</span>
+                </div>
+              )}
             </div>
 
             {/* 规则列表 */}
@@ -317,10 +337,15 @@ export function DataConfig({
                           <div className="flex max-w-sm">
                             <input placeholder="输入新别名后回车添加..."
                               className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
+                              onChange={() => setAliasError('')}
                               onKeyDown={e => {
                                 if (e.key === 'Enter') {
                                   const input = e.target as HTMLInputElement;
-                                  if (input.value.trim()) { onAddMergeRule(rule.targetName, input.value.trim()); input.value = ''; }
+                                  if (input.value.trim()) { 
+                                    if (validateAndAddAlias(rule.targetName, input.value.trim())) {
+                                      input.value = ''; 
+                                    }
+                                  }
                                 }
                               }} />
                           </div>
