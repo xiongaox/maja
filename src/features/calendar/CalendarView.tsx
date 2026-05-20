@@ -33,7 +33,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-20 md:h-28 bg-gray-50/50 rounded-xl border border-dashed border-gray-200"></div>);
+      days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 bg-gray-50/30"></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -55,16 +55,16 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
         <div
           key={dateStr}
           onClick={() => setSelectedDay(dateStr)}
-          className={`h-20 md:h-28 p-2 flex flex-col items-center justify-center relative cursor-pointer rounded-xl transition-all duration-200 shadow-sm hover:shadow-md
-            ${isSelected ? 'bg-emerald-500 text-white shadow-emerald-200 transform scale-[1.02] z-10' : 'bg-white hover:bg-emerald-50 border border-gray-100'}
+          className={`h-16 sm:h-20 md:h-28 p-0.5 sm:p-1 md:p-2 flex flex-col items-center justify-start pt-1 md:pt-2 relative cursor-pointer transition-all duration-200
+            ${isSelected ? 'bg-emerald-500 shadow-inner z-10' : 'bg-white hover:bg-emerald-50'}
           `}
         >
-          <span className={`text-lg md:text-xl font-bold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
+          <span className={`text-sm md:text-xl font-bold ${isSelected ? 'text-white' : (dayData ? 'text-gray-900' : 'text-gray-400')}`}>
             {day}
           </span>
           {dayData && (
-            <div className="absolute bottom-1.5 md:bottom-2 w-full px-1.5 flex justify-center">
-              <span className={`text-[10px] md:text-sm font-black tracking-tight px-1 py-0.5 rounded-md text-center truncate w-full ${amountBadgeClass}`}>
+            <div className="mt-auto mb-1 w-full px-0.5 flex justify-center">
+              <span className={`text-[9px] sm:text-[10px] md:text-sm font-black tracking-tighter sm:tracking-normal px-0.5 sm:px-1 py-0.5 rounded sm:rounded-md text-center truncate w-[98%] max-w-full ${amountBadgeClass}`}>
                 {amountSign}{dayData.net.toFixed(1)}
               </span>
             </div>
@@ -128,12 +128,12 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-px bg-gray-100 text-center">
+        <div className="grid grid-cols-7 gap-px bg-gray-100 text-center border-b border-gray-100">
           {['日', '一', '二', '三', '四', '五', '六'].map(day => (
             <div key={day} className="bg-white py-3 text-xs font-bold text-gray-400">{day}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1 p-2 bg-gray-50/50">
+        <div className="grid grid-cols-7 gap-px bg-gray-100">
           {renderCalendar()}
         </div>
       </div>
