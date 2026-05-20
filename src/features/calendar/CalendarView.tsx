@@ -33,10 +33,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
-      // 增加条纹样式的空网格
-      days.push(
-        <div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 opacity-40 bg-[repeating-linear-gradient(-45deg,#f3f4f6,#f3f4f6_8px,transparent_8px,transparent_16px)]"></div>
-      );
+      days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 md:h-28 bg-transparent"></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -46,34 +43,33 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
 
       let amountSign = '';
       let amountBadgeClass = '';
-      let cellBgClass = 'bg-white hover:bg-gray-50';
+      let cellBgClass = 'bg-white border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5';
 
       if (isSelected) {
-        cellBgClass = 'bg-gradient-to-b from-emerald-400 to-emerald-500 shadow-inner z-10 ring-2 ring-emerald-400 ring-offset-1';
+        cellBgClass = 'bg-emerald-500 shadow-lg shadow-emerald-200/50 scale-105 z-10 border-transparent';
       } else if (dayData) {
-        // 如果有数据，增加极淡的背景色
-        cellBgClass = dayData.net >= 0 ? 'bg-emerald-50/40 hover:bg-emerald-50' : 'bg-rose-50/40 hover:bg-rose-50';
+        cellBgClass = dayData.net >= 0 ? 'bg-emerald-50/80 border-emerald-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-emerald-100/50' : 'bg-rose-50/80 border-rose-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-rose-100/50';
       }
 
       if (dayData && dayData.net !== 0) {
         amountSign = dayData.net > 0 ? '+' : '';
         amountBadgeClass = isSelected
-          ? 'text-emerald-50 bg-black/10 shadow-inner'
-          : (dayData.net > 0 ? 'text-emerald-600 bg-emerald-100/60 shadow-sm shadow-emerald-100/30' : 'text-rose-600 bg-rose-100/60 shadow-sm shadow-rose-100/30');
+          ? 'text-emerald-100 bg-black/10'
+          : (dayData.net > 0 ? 'text-emerald-700 bg-white/60' : 'text-rose-700 bg-white/60');
       }
 
       days.push(
         <div
           key={dateStr}
           onClick={() => setSelectedDay(dateStr)}
-          className={`h-16 sm:h-20 md:h-28 p-0.5 sm:p-1 md:p-2 flex flex-col items-center justify-start pt-1 md:pt-2 relative cursor-pointer transition-all duration-300 ${cellBgClass}`}
+          className={`h-16 sm:h-20 md:h-24 p-1 md:p-2 flex flex-col items-center justify-start pt-1.5 md:pt-3 relative cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
         >
           <span className={`text-sm md:text-xl font-bold ${isSelected ? 'text-white' : (dayData ? 'text-gray-900' : 'text-gray-400')}`}>
             {day}
           </span>
           {dayData && (
-            <div className="mt-auto mb-1 w-full px-0.5 flex justify-center">
-              <span className={`text-[9px] sm:text-[10px] md:text-sm font-black tracking-tighter sm:tracking-normal px-0.5 sm:px-1 py-0.5 rounded sm:rounded-md text-center truncate w-[98%] max-w-full ${amountBadgeClass}`}>
+            <div className="mt-auto mb-0.5 md:mb-1 w-full flex justify-center">
+              <span className={`text-[9px] sm:text-[10px] md:text-xs font-black tracking-tighter sm:tracking-normal px-1 sm:px-1.5 py-0.5 rounded-lg text-center truncate max-w-[95%] shadow-sm ${amountBadgeClass}`}>
                 {amountSign}{dayData.net.toFixed(1)}
               </span>
             </div>
@@ -82,25 +78,27 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
       );
     }
     return days;
+
   };
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">战绩日历</h1>
-        <p className="text-gray-500 text-sm mt-1">查看每日盈亏与流水明细</p>
-      </header>
-
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-white rounded-full transition-colors text-gray-600 hover:shadow-sm">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">战绩日历</h1>
+          <p className="text-gray-500 text-sm mt-1">查看每日盈亏与流水明细</p>
+        </div>
+        
+        {/* 月份切换器 - 悬浮卡片式 */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-1.5 flex items-center gap-1 w-max">
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-600">
             <ChevronLeft size={20} />
           </button>
 
           <div className="relative group">
             <button
               onClick={() => { setPickerYear(currentDate.getFullYear()); setIsDatePickerOpen(!isDatePickerOpen); }}
-              className="flex items-center gap-2 text-lg font-bold text-gray-800 bg-transparent border border-transparent hover:border-gray-200 hover:bg-white px-4 py-1.5 rounded-xl transition-all cursor-pointer"
+              className="flex items-center gap-2 text-lg font-bold text-gray-800 hover:bg-gray-50 px-4 py-1.5 rounded-xl transition-all cursor-pointer"
             >
               <span>{currentDate.getFullYear()}年 {currentDate.getMonth() + 1}月</span>
               <CalendarIcon size={16} className="text-gray-400" />
@@ -109,7 +107,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
             {isDatePickerOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsDatePickerOpen(false)}></div>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95">
                   <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-50">
                     <button onClick={() => setPickerYear(y => y - 1)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"><ChevronLeft size={18} /></button>
                     <span className="font-bold text-gray-800">{pickerYear}年</span>
@@ -132,17 +130,20 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
             )}
           </div>
 
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-white rounded-full transition-colors text-gray-600 hover:shadow-sm">
+          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-600">
             <ChevronRight size={20} />
           </button>
         </div>
+      </header>
 
-        <div className="grid grid-cols-7 gap-px bg-gray-100 text-center border-b border-gray-100">
+      {/* 悬浮网格日历 */}
+      <div className="w-full">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3 text-center mb-2 px-1">
           {['日', '一', '二', '三', '四', '五', '六'].map((day, idx) => (
-            <div key={day} className={`bg-gray-50/80 py-3 text-xs font-black tracking-widest ${idx === 0 || idx === 6 ? 'text-gray-400' : 'text-gray-500'}`}>{day}</div>
+            <div key={day} className={`py-1 text-xs font-black tracking-widest ${idx === 0 || idx === 6 ? 'text-gray-400' : 'text-gray-500'}`}>{day}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-px bg-gray-100">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
           {renderCalendar()}
         </div>
       </div>
