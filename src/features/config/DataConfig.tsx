@@ -121,10 +121,10 @@ export function DataConfig({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-1 py-2 md:px-5 md:py-2.5 rounded-xl transition-all ${
+              className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-1 py-2 md:px-5 md:py-2.5 rounded-xl transition-all flex-1 ${
                 isActive
-                  ? 'bg-white text-emerald-700 shadow-sm border border-black/5 md:scale-[1.02]'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                  ? 'bg-white text-emerald-700 shadow-sm border border-black/5'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'
               }`}
             >
               <Icon size={18} className={isActive ? 'text-emerald-500 drop-shadow-sm' : 'opacity-70'} />
