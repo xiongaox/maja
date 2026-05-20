@@ -30,7 +30,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
         <div className="flex items-start justify-between mb-3 relative z-10">
           <div className="flex items-center gap-3">
             <img
-              src={`https://api.dicebear.com/7.x/${player.gender === 'girl' ? 'lorelei' : 'adventurer'}/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=transparent&skinColor=ecbcb4,f2d3b1,f8e3c1`}
+              src={`https://api.dicebear.com/7.x/${player.gender === 'girl' ? 'lorelei' : 'adventurer'}/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=transparent`}
               alt={player.name}
               className={`w-10 h-10 rounded-full flex-shrink-0 shadow-inner
                 ${isWinner ? 'bg-gradient-to-br from-amber-100 to-yellow-200' : 'bg-gradient-to-br from-gray-100 to-gray-200'}`}

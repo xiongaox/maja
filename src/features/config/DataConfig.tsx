@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import {
   Filter, Users, Shield,
   Plus, Trash2, Search, ArrowRight, Zap, Edit2, Check, X,
-  TrendingUp, TrendingDown
+  TrendingUp, TrendingDown, User
 } from 'lucide-react';
 import type { Transaction, MergeRule, WhitelistItem } from '../../types';
 import type { FilterOptions } from '../../lib/pipeline';
@@ -307,55 +307,56 @@ export function DataConfig({
                     }}
                   >
 
-                    {/* 备注名 —— 大字标题行 */}
-                    <div className="flex items-center gap-2 px-4 pt-4 pb-2.5 cursor-default">
+                    <div className="flex items-center p-3 md:p-4 border-b border-gray-100 gap-2">
                       {isEditing ? (
-                        <div className="flex items-center gap-2 flex-1">
+                        <div className="flex-1 flex items-center gap-2">
                           <input
                             autoFocus
                             value={editingTargetName}
-                            onChange={e => setEditingTargetName(e.target.value)}
-                            onKeyDown={e => {
+                            onChange={(e) => setEditingTargetName(e.target.value)}
+                            onKeyDown={(e) => {
                               if (e.key === 'Enter') { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }
                               if (e.key === 'Escape') setEditingRuleId(null);
                             }}
-                            className="flex-1 text-lg font-bold bg-transparent border-b-2 border-emerald-400 outline-none text-gray-900 pb-0.5"
+                            className="flex-1 text-lg font-bold bg-transparent border-b-2 border-emerald-400 outline-none text-gray-900 pb-0.5 min-w-0"
                           />
                           <button onClick={() => { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }}
-                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Check size={16} /></button>
+                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg shrink-0"><Check size={16} /></button>
                           <button onClick={() => setEditingRuleId(null)}
-                            className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg"><X size={16} /></button>
+                            className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg shrink-0"><X size={16} /></button>
                         </div>
                       ) : (
                         <>
-                          <span className="flex-1 text-lg font-bold text-gray-900">{rule.targetName}</span>
+                          <span className="flex-1 text-lg font-bold text-gray-900 truncate">{rule.targetName}</span>
                           
-                          {/* 性别选择 */}
-                          <div className="flex bg-slate-50 rounded-lg p-0.5 mr-1 border border-slate-100">
-                            <button onClick={() => onUpdateGender(rule.id, rule.gender === 'boy' ? undefined : 'boy')}
-                              className={`px-1.5 py-1 rounded text-xs font-bold transition-colors ${rule.gender === 'boy' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'text-slate-300 hover:text-blue-400'}`}
-                              title="设置为男生头像"
-                            >
-                              👦
+                          <div className="flex items-center shrink-0">
+                            <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
+                              className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                              <Edit2 size={15} />
                             </button>
-                            <button onClick={() => onUpdateGender(rule.id, rule.gender === 'girl' ? undefined : 'girl')}
-                              className={`px-1.5 py-1 rounded text-xs font-bold transition-colors ${rule.gender === 'girl' ? 'bg-pink-100 text-pink-600 shadow-sm' : 'text-slate-300 hover:text-pink-400'}`}
-                              title="设置为女生头像"
-                            >
-                              👧
+                            <button onClick={() => onRemoveMergeRule(rule.id)}
+                              className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                              <Trash2 size={15} />
                             </button>
                           </div>
-
-                          <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
-                            className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                            <Edit2 size={14} />
-                          </button>
-                          <button onClick={() => onRemoveMergeRule(rule.id)}
-                            className="p-1.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
-                            <Trash2 size={14} />
-                          </button>
                         </>
                       )}
+
+                      {/* 性别选择永远显示在最右侧 */}
+                      <div className="flex bg-slate-50 rounded-lg p-0.5 border border-slate-100 shrink-0 ml-1">
+                        <button onClick={() => onUpdateGender(rule.id, rule.gender === 'boy' ? undefined : 'boy')}
+                          className={`p-1 rounded transition-colors ${rule.gender === 'boy' ? 'bg-blue-100 text-blue-500 shadow-sm' : 'text-slate-300 hover:text-blue-400'}`}
+                          title="设置为男生头像"
+                        >
+                          <User size={14} strokeWidth={3} />
+                        </button>
+                        <button onClick={() => onUpdateGender(rule.id, rule.gender === 'girl' ? undefined : 'girl')}
+                          className={`p-1 rounded transition-colors ${rule.gender === 'girl' ? 'bg-pink-100 text-pink-500 shadow-sm' : 'text-slate-300 hover:text-pink-400'}`}
+                          title="设置为女生头像"
+                        >
+                          <User size={14} strokeWidth={3} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* 收付款方名 —— 小 chip 行 */}
