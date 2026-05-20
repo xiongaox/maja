@@ -250,32 +250,35 @@ export function DataConfig({
               )}
             </div>
 
-            {isCreatingGroup && (
-              <div className="mx-4 md:mx-6 p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl flex items-center gap-3 shadow-inner">
-                <input
-                  autoFocus
-                  placeholder="输入新备注名（如：阿喵）回车确认…"
-                  value={newGroupName}
-                  onChange={e => setNewGroupName(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') handleCreateGroup();
-                    if (e.key === 'Escape') { setIsCreatingGroup(false); setNewGroupName(''); }
-                  }}
-                  className="flex-1 px-4 py-2 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/30 text-gray-800 text-sm font-medium"
-                />
-                <button onClick={handleCreateGroup} disabled={!newGroupName.trim()}
-                  className="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-colors">
-                  创建
-                </button>
-                <button onClick={() => { setIsCreatingGroup(false); setNewGroupName(''); }}
-                  className="px-3 py-2 text-gray-400 hover:text-gray-600 transition-colors">
-                  取消
-                </button>
-              </div>
-            )}
+            <div className="flex-1 px-4 pb-4 md:px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start content-start mt-4">
+              
+              {isCreatingGroup && (
+                <div className="bg-emerald-50/50 border-2 border-emerald-200 rounded-2xl flex flex-col p-4 shadow-inner">
+                  <div className="text-sm font-bold text-emerald-800 mb-2">新建备注组</div>
+                  <input
+                    autoFocus
+                    placeholder="输入组名，如：阿喵"
+                    value={newGroupName}
+                    onChange={e => setNewGroupName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleCreateGroup();
+                      if (e.key === 'Escape') { setIsCreatingGroup(false); setNewGroupName(''); }
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400/30 text-gray-800 text-sm font-medium mb-3"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={handleCreateGroup} disabled={!newGroupName.trim()}
+                      className="flex-1 py-1.5 bg-emerald-500 text-white text-sm font-medium rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-colors">
+                      创建
+                    </button>
+                    <button onClick={() => { setIsCreatingGroup(false); setNewGroupName(''); }}
+                      className="px-3 py-1.5 text-gray-400 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium">
+                      取消
+                    </button>
+                  </div>
+                </div>
+              )}
 
-            {/* 已创建的备注组列表（上方主区域） */}
-            <div className="flex-1 px-4 pb-4 md:px-6 space-y-3">
               {mergeRules.length > 0 ? mergeRules.map(rule => {
                 const isEditing = editingRuleId === rule.id;
                 return (
