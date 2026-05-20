@@ -84,6 +84,10 @@ export function DataConfig({
   // 点击白名单名字后，等待输入备注名
   const [pendingWhitelistName, setPendingWhitelistName] = useState<string | null>(null);
   const [pendingNickname, setPendingNickname] = useState('');
+  
+  // 拖拽相关状态
+  const [draggedItemName, setDraggedItemName] = useState<string | null>(null);
+  const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
 
   const enabledCount = whitelist.filter(item => item.enabled).length;
   const filteredWhitelist = searchTerm
@@ -239,10 +243,30 @@ export function DataConfig({
               {mergeRules.length > 0 ? mergeRules.map(rule => {
                 const isEditing = editingRuleId === rule.id;
                 return (
-                  <div key={rule.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                  <div
+                    key={rule.id}
+                    className={`bg-white border rounded-2xl shadow-sm transition-all ${
+                      dragOverGroup === rule.id
+                        ? 'border-emerald-400 ring-2 ring-emerald-400/20 bg-emerald-50/30'
+                        : 'border-gray-100 hover:shadow-md'
+                    }`}
+                    onDragOver={e => {
+                      e.preventDefault(); // 必须阻止默认行为才能接收 drop
+                      if (draggedItemName) setDragOverGroup(rule.id);
+                    }}
+                    onDragLeave={() => setDragOverGroup(null)}
+                    onDrop={e => {
+                      e.preventDefault();
+                      setDragOverGroup(null);
+                      if (draggedItemName) {
+                        onAddMergeRule(rule.targetName, draggedItemName);
+                        setDraggedItemName(null);
+                      }
+                    }}
+                  >
 
                     {/* 备注名 —— 大字标题行 */}
-                    <div className="flex items-center gap-2 px-4 pt-4 pb-2.5">
+                    <div className="flex items-center gap-2 px-4 pt-4 pb-2.5 cursor-default">
                       {isEditing ? (
                         <div className="flex items-center gap-2 flex-1">
                           <input
@@ -332,7 +356,7 @@ export function DataConfig({
                 <div className="border-t border-gray-100 bg-slate-50/80 rounded-b-xl px-4 py-4">
                   <p className="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
                     <Shield size={12} className="text-slate-300" />
-                    点击下方收付款方，为他起备注名；一个备注名可关联多个收付款方
+                    点击收付款方，为他起备注名；也可以直接拖拽到上方已有的备注组中
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {unassigned.map(item => (
@@ -356,25 +380,7 @@ export function DataConfig({
                               }}
                               className="text-sm font-semibold text-gray-800 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 bg-gray-50 placeholder-gray-300"
                             />
-                            {/* 或归入已有备注组 */}
-                            {mergeRules.length > 0 && (
-                              <div>
-                                <p className="text-xs text-gray-400 mb-1.5">或归入已有备注组：</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {mergeRules.map(r => (
-                                    <button key={r.id}
-                                      onClick={() => {
-                                        onAddMergeRule(r.targetName, item.name);
-                                        setPendingWhitelistName(null);
-                                        setPendingNickname('');
-                                      }}
-                                      className="px-3 py-1 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-all">
-                                      {r.targetName}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                            {/* 删除旧的“或归入已有备注组”因为有了拖拽功能 */}
                             <div className="flex gap-2 pt-0.5">
                               <button
                                 onClick={handleConfirmNickname}
@@ -391,8 +397,11 @@ export function DataConfig({
                           </div>
                         ) : (
                           <button
+                            draggable
+                            onDragStart={() => setDraggedItemName(item.name)}
+                            onDragEnd={() => setDraggedItemName(null)}
                             onClick={() => { setPendingWhitelistName(item.name); setPendingNickname(''); }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-md transition-all">
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-md transition-all cursor-grab active:cursor-grabbing">
                             <Plus size={13} />
                             {item.name}
                           </button>
