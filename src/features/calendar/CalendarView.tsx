@@ -64,20 +64,27 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
         <div
           key={dateStr}
           onClick={() => setSelectedDay(dateStr)}
-          className={`h-16 sm:h-20 md:h-28 relative cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
+          className={`h-16 sm:h-20 md:h-28 relative flex items-center justify-center cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
         >
-          {/* 日期 - 固定在左上角 */}
-          <span className={`absolute top-1.5 left-2 md:top-2 md:left-3 text-xs md:text-sm font-bold ${isSelected ? 'text-white/90' : (dayData ? 'text-gray-500' : 'text-gray-400')}`}>
-            {day}
-          </span>
-          
-          {/* 金额 - 居中放大显示 */}
-          {dayData && (
-            <div className="w-full h-full flex items-center justify-center pt-3 md:pt-4">
-              <span className={`text-sm sm:text-base md:text-xl font-black tracking-tight ${amountBadgeClass}`}>
-                {amountSign}{dayData.net.toFixed(1)}
+          {dayData ? (
+            <>
+              {/* 有数据：日期固定在左上角 */}
+              <span className={`absolute top-1.5 left-2 md:top-2 md:left-3 text-xs md:text-sm font-bold ${isSelected ? 'text-white/90' : 'text-gray-500'}`}>
+                {day}
               </span>
-            </div>
+              
+              {/* 有数据：金额居中放大显示 */}
+              <div className="w-full h-full flex items-center justify-center pt-3 md:pt-4">
+                <span className={`text-sm sm:text-base md:text-xl font-black tracking-tight ${amountBadgeClass}`}>
+                  {amountSign}{dayData.net.toFixed(1)}
+                </span>
+              </div>
+            </>
+          ) : (
+            /* 无数据：日期直接居中放大 */
+            <span className={`text-base sm:text-lg md:text-2xl font-bold ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+              {day}
+            </span>
           )}
         </div>
       );
