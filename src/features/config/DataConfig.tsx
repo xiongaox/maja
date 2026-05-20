@@ -351,19 +351,9 @@ export function DataConfig({
                             </button>
                           </span>
                         ))}
-                        {/* 可手动补充 Excel 名 */}
-                        <input
-                          placeholder={rule.aliases.length === 0
-                            ? '点击下方名字添加，或手动输入 Excel 收付款方名回车…'
-                            : '+ 继续添加'}
-                          className="h-7 min-w-[160px] flex-1 text-xs text-slate-400 placeholder-slate-300 bg-transparent border-none outline-none"
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                              const el = e.target as HTMLInputElement;
-                              if (el.value.trim()) { onAddMergeRule(rule.targetName, el.value.trim()); el.value = ''; }
-                            }
-                          }}
-                        />
+                        {rule.aliases.length === 0 && (
+                          <span className="text-xs text-emerald-600/50 italic py-1 px-1">拖拽下方成员到此处...</span>
+                        )}
                       </div>
                     )}
                   </div>
