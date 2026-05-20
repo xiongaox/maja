@@ -56,22 +56,25 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
       if (dayData && dayData.net !== 0) {
         amountSign = dayData.net > 0 ? '+' : '';
         amountBadgeClass = isSelected
-          ? 'text-emerald-50 bg-black/10'
-          : (dayData.net > 0 ? 'text-emerald-600 bg-white shadow-sm' : 'text-rose-600 bg-white shadow-sm');
+          ? 'text-white'
+          : (dayData.net > 0 ? 'text-emerald-600' : 'text-rose-600');
       }
 
       days.push(
         <div
           key={dateStr}
           onClick={() => setSelectedDay(dateStr)}
-          className={`h-16 sm:h-20 md:h-28 p-1 md:p-2 flex flex-col items-center justify-start pt-2 md:pt-4 relative cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
+          className={`h-16 sm:h-20 md:h-28 relative cursor-pointer rounded-2xl transition-all duration-300 ${cellBgClass}`}
         >
-          <span className={`text-sm md:text-xl font-bold ${isSelected ? 'text-white' : (dayData ? 'text-gray-900' : 'text-gray-500')}`}>
+          {/* 日期 - 固定在左上角 */}
+          <span className={`absolute top-1.5 left-2 md:top-2 md:left-3 text-xs md:text-sm font-bold ${isSelected ? 'text-white/90' : (dayData ? 'text-gray-500' : 'text-gray-400')}`}>
             {day}
           </span>
+          
+          {/* 金额 - 居中放大显示 */}
           {dayData && (
-            <div className="mt-auto mb-1 md:mb-2 w-full flex justify-center">
-              <span className={`text-[10px] md:text-sm font-black tracking-tight px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-lg text-center truncate max-w-[95%] md:max-w-[80%] ${amountBadgeClass}`}>
+            <div className="w-full h-full flex items-center justify-center pt-3 md:pt-4">
+              <span className={`text-sm sm:text-base md:text-xl font-black tracking-tight ${amountBadgeClass}`}>
                 {amountSign}{dayData.net.toFixed(1)}
               </span>
             </div>
