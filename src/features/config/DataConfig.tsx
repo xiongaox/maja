@@ -50,14 +50,14 @@ function PipelineVisualization({ stats }: { stats: DataConfigProps['stats'] }) {
         <Zap size={18} className="text-emerald-500 drop-shadow-sm" />
         <span className="font-bold text-gray-800 text-lg">数据处理流程</span>
       </div>
-      <div className="flex items-center justify-between overflow-x-auto pb-1 gap-2">
+      <div className="grid grid-cols-2 md:flex md:items-center md:justify-between gap-2 md:gap-3">
         {steps.map((step, index) => (
           <React.Fragment key={step.label}>
-            <div className={`flex-1 ${step.color} rounded-xl px-4 py-3 min-w-[110px] text-center shadow-sm border border-white/50 backdrop-blur-sm transition-transform hover:scale-105`}>
-              <div className="text-2xl font-black text-gray-800 drop-shadow-sm">{step.count}</div>
-              <div className="text-sm font-medium text-gray-600 mt-0.5">{step.label}</div>
+            <div className={`flex-1 ${step.color} rounded-xl px-3 py-2 md:px-4 md:py-3 text-center shadow-sm border border-white/50 backdrop-blur-sm transition-transform hover:scale-105`}>
+              <div className="text-xl md:text-2xl font-black text-gray-800 drop-shadow-sm">{step.count}</div>
+              <div className="text-xs md:text-sm font-medium text-gray-600 mt-0.5">{step.label}</div>
             </div>
-            {index < steps.length - 1 && <ArrowRight size={20} className="text-gray-300 flex-shrink-0" />}
+            {index < steps.length - 1 && <ArrowRight size={20} className="hidden md:block text-gray-300 flex-shrink-0" />}
           </React.Fragment>
         ))}
       </div>
@@ -113,7 +113,7 @@ export function DataConfig({
       <PipelineVisualization stats={stats} />
 
       {/* Tab 导航 */}
-      <div className="flex bg-slate-100/80 rounded-2xl p-1.5 overflow-x-auto hide-scrollbar shadow-inner border border-slate-200/50">
+      <div className="grid grid-cols-3 md:flex bg-slate-100/80 rounded-2xl p-1 md:p-1.5 shadow-inner border border-slate-200/50 gap-1 md:gap-0">
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
@@ -121,21 +121,23 @@ export function DataConfig({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all flex-shrink-0 flex-1 whitespace-nowrap ${
+              className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 px-1 py-2 md:px-5 md:py-2.5 rounded-xl transition-all ${
                 isActive
-                  ? 'bg-white text-emerald-700 shadow-sm border border-black/5 scale-[1.02]'
+                  ? 'bg-white text-emerald-700 shadow-sm border border-black/5 md:scale-[1.02]'
                   : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
               }`}
             >
               <Icon size={18} className={isActive ? 'text-emerald-500 drop-shadow-sm' : 'opacity-70'} />
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ml-1 font-bold ${
-                  isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200/70 text-slate-500'
-                }`}>
-                  {tab.count}
-                </span>
-              )}
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] md:text-sm font-medium whitespace-nowrap">{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span className={`hidden md:inline-block text-xs px-2 py-0.5 rounded-full font-bold ${
+                    isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200/70 text-slate-500'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}
@@ -145,7 +147,7 @@ export function DataConfig({
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm min-h-[400px]">
         {/* 筛选条件 */}
         {activeTab === 'filter' && (
-          <div className="p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2">
+          <div className="p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">交易类型</label>
               <div className="flex flex-wrap gap-2">
@@ -224,7 +226,7 @@ export function DataConfig({
 
         {/* 搭子合并 */}
         {activeTab === 'merge' && (
-          <div className="p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+          <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
             {/* 添加规则 */}
             <div className="flex flex-col sm:flex-row gap-3">
               <input value={targetName} onChange={e => setTargetName(e.target.value)}
@@ -341,7 +343,7 @@ export function DataConfig({
 
         {/* 收付款白名单 */}
         {activeTab === 'whitelist' && (
-          <div className="p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+          <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row gap-3">
               <input value={newName} onChange={e => setNewName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddWhitelist()}
