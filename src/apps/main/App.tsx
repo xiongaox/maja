@@ -210,6 +210,12 @@ export default function MahjongTracker() {
     ));
   }, []);
 
+  const handleUpdateGender = useCallback((ruleId: string, gender: 'boy' | 'girl' | undefined) => {
+    setMergeRules(prev => prev.map(rule =>
+      rule.id === ruleId ? { ...rule, gender } : rule
+    ));
+  }, []);
+
   const handleClearMergeRules = useCallback(() => {
     setMergeRules([]);
   }, []);
@@ -660,6 +666,7 @@ export default function MahjongTracker() {
               onRemoveMergeRule={handleRemoveMergeRule}
               onRemoveAlias={handleRemoveAlias}
               onUpdateTargetName={handleUpdateTargetName}
+              onUpdateGender={handleUpdateGender}
               onClearMergeRules={handleClearMergeRules}
               onEnsureMergeRule={handleEnsureMergeRule}
               onFilterChange={setFilterOptions}

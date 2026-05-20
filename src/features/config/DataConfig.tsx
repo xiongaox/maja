@@ -31,6 +31,7 @@ interface DataConfigProps {
   onRemoveMergeRule: (ruleId: string) => void;
   onRemoveAlias: (ruleId: string, alias: string) => void;
   onUpdateTargetName: (ruleId: string, newTargetName: string) => void;
+  onUpdateGender: (ruleId: string, gender: 'boy' | 'girl' | undefined) => void;
   onClearMergeRules: () => void;
   onEnsureMergeRule: (targetName: string) => void;
   onFilterChange: (options: FilterOptions) => void;
@@ -69,7 +70,7 @@ function PipelineVisualization({ stats }: { stats: DataConfigProps['stats'] }) {
 export function DataConfig({
   transactions, mergeRules, whitelist, filterOptions, stats,
   onAddWhitelist, onRemoveWhitelist, onToggleWhitelist, onClearWhitelist, onBatchAddWhitelist,
-  onAddMergeRule, onRemoveMergeRule, onRemoveAlias, onUpdateTargetName, onClearMergeRules,
+  onAddMergeRule, onRemoveMergeRule, onRemoveAlias, onUpdateTargetName, onUpdateGender, onClearMergeRules,
   onFilterChange, suggestedNames, originalNames, onEnsureMergeRule,
 }: DataConfigProps) {
   const [activeTab, setActiveTab] = useState<'filter' | 'merge' | 'whitelist'>('filter');
@@ -328,6 +329,23 @@ export function DataConfig({
                       ) : (
                         <>
                           <span className="flex-1 text-lg font-bold text-gray-900">{rule.targetName}</span>
+                          
+                          {/* 性别选择 */}
+                          <div className="flex bg-slate-50 rounded-lg p-0.5 mr-1 border border-slate-100">
+                            <button onClick={() => onUpdateGender(rule.id, rule.gender === 'boy' ? undefined : 'boy')}
+                              className={`px-1.5 py-1 rounded text-xs font-bold transition-colors ${rule.gender === 'boy' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'text-slate-300 hover:text-blue-400'}`}
+                              title="设置为男生头像"
+                            >
+                              👦
+                            </button>
+                            <button onClick={() => onUpdateGender(rule.id, rule.gender === 'girl' ? undefined : 'girl')}
+                              className={`px-1.5 py-1 rounded text-xs font-bold transition-colors ${rule.gender === 'girl' ? 'bg-pink-100 text-pink-600 shadow-sm' : 'text-slate-300 hover:text-pink-400'}`}
+                              title="设置为女生头像"
+                            >
+                              👧
+                            </button>
+                          </div>
+
                           <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
                             className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
                             <Edit2 size={14} />

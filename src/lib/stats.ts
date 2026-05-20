@@ -5,7 +5,7 @@
  * 特点：纯函数，无副作用，可测试
  */
 
-import type { Transaction, Stats, DailyStat } from '../types';
+import type { Transaction, Stats, DailyStat, PlayerStat } from '../types';
 
 /**
  * 计算总体统计
@@ -13,7 +13,7 @@ import type { Transaction, Stats, DailyStat } from '../types';
 export function calculateStats(transactions: Transaction[]): Stats {
   let totalWin = 0;
   let totalLoss = 0;
-  const playerStats: Record<string, { name: string; net: number; win: number; loss: number }> = {};
+  const playerStats: Record<string, PlayerStat> = {};
 
   const todayDate = new Date();
   const todayStr = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
@@ -34,7 +34,9 @@ export function calculateStats(transactions: Transaction[]): Stats {
 
     const displayName = t.displayName || t.name;
     if (!playerStats[displayName]) {
-      playerStats[displayName] = { name: displayName, net: 0, win: 0, loss: 0 };
+      playerStats[displayName] = { name: displayName, net: 0, win: 0, loss: 0, gender: t.gender };
+    } else if (t.gender && !playerStats[displayName].gender) {
+      playerStats[displayName].gender = t.gender;
     }
     playerStats[displayName].net += t.amount;
     if (t.amount > 0) playerStats[displayName].win += t.amount;

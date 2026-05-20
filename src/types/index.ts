@@ -4,6 +4,7 @@ export interface Transaction {
   name: string;
   amount: number;
   displayName?: string;
+  gender?: 'boy' | 'girl';
   type?: string;
   account?: string;
   direction?: string;
@@ -23,6 +24,7 @@ export interface PlayerStat {
   net: number;
   win: number;
   loss: number;
+  gender?: 'boy' | 'girl';
 }
 
 export interface Stats {
@@ -50,4 +52,5 @@ export interface MergeRule {
   id: string;
   targetName: string;  // 目标名字（合并后的名字）
   aliases: string[];   // 原名称列表（多个别名）
+  gender?: 'boy' | 'girl';
 }

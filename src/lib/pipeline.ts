@@ -50,26 +50,35 @@ export function applyMergeRules(
   mergeRules: MergeRule[]
 ): { normalized: Transaction[]; aliasMap: Record<string, string> } {
   // 构建别名映射表
-  const aliasMap: Record<string, string> = {};
+  const aliasMap: Record<string, { targetName: string, gender?: 'boy' | 'girl' }> = {};
   mergeRules.forEach(rule => {
     rule.aliases.forEach(alias => {
-      aliasMap[alias] = rule.targetName;
+      aliasMap[alias] = { targetName: rule.targetName, gender: rule.gender };
     });
+    // 也把 targetName 自己加进去，防止本来就是 targetName 但是没被匹配
+    aliasMap[rule.targetName] = { targetName: rule.targetName, gender: rule.gender };
   });
 
   // 应用映射
   const normalized = transactions.map(t => {
     let matchedName = t.name;
+    let gender = undefined;
     
     // 精确匹配
     if (aliasMap[t.name]) {
-      matchedName = aliasMap[t.name];
+      matchedName = aliasMap[t.name].targetName;
+      gender = aliasMap[t.name].gender;
     }
     
-    return { ...t, displayName: matchedName };
+    return { ...t, displayName: matchedName, gender };
   });
 
-  return { normalized, aliasMap };
+  // 返回兼容的 aliasMap
+  const compatibleAliasMap = Object.fromEntries(
+    Object.entries(aliasMap).map(([k, v]) => [k, v.targetName])
+  );
+
+  return { normalized, aliasMap: compatibleAliasMap };
 }
 
 /**
