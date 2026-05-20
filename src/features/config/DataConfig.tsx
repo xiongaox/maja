@@ -81,6 +81,9 @@ export function DataConfig({
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editingTargetName, setEditingTargetName] = useState('');
+  // 快速入口：点击白名单后等待输入备注名
+  const [pendingWhitelistName, setPendingWhitelistName] = useState<string | null>(null);
+  const [pendingNickname, setPendingNickname] = useState('');
 
   const enabledCount = whitelist.filter(item => item.enabled).length;
   const filteredWhitelist = searchTerm
@@ -90,14 +93,25 @@ export function DataConfig({
   const handleAddWhitelist = () => {
     if (newName.trim()) { onAddWhitelist(newName.trim()); setNewName(''); }
   };
+
+  // 确认备注名：将白名单名添加为指定备注名的 alias
+  const handleConfirmNickname = () => {
+    if (!pendingWhitelistName || !pendingNickname.trim()) return;
+    onAddMergeRule(pendingNickname.trim(), pendingWhitelistName);
+    setPendingWhitelistName(null);
+    setPendingNickname('');
+  };
+
+  // 将白名单名添加到已有备注组
+  const handleAddToExistingGroup = (targetRuleName: string, whitelistName: string) => {
+    onAddMergeRule(targetRuleName, whitelistName);
+    setPendingWhitelistName(null);
+    setPendingNickname('');
+  };
+
   const validateAndAddAlias = (tName: string, aName: string): boolean => {
-    // 只软警告，不阻止添加
-    if (!originalNames.includes(aName)) {
-      setAliasError(`警告："${aName}" 在导入账单中未找到，已强制添加`);
-    } else {
-      setAliasError('');
-    }
     onAddMergeRule(tName, aName);
+    setAliasError('');
     return true;
   };
 
@@ -239,38 +253,16 @@ export function DataConfig({
         {/* 搭子合并 */}
         {activeTab === 'merge' && (
           <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
-            {/* 添加规则 */}
-            <div className="space-y-2">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input value={aliasName} onChange={e => { setAliasName(e.target.value); setAliasError(''); }}
-                  placeholder="Excel 收付款方名（如: 美味点）"
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
-                <input value={targetName} onChange={e => { setTargetName(e.target.value); setAliasError(''); }}
-                  onKeyDown={e => e.key === 'Enter' && handleAddMergeRule()}
-                  placeholder="你叫他的昵称（如: 阿喵）"
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
-                <button onClick={handleAddMergeRule} disabled={!targetName.trim() || !aliasName.trim()}
-                  className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium">
-                  <Plus size={18} />
-                  <span>添加合并</span>
-                </button>
-              </div>
-              {aliasError && (
-                <div className="text-sm text-amber-500 flex items-center gap-1.5 px-1 animate-in slide-in-from-top-1">
-                  <span>⚠️ {aliasError}</span>
-                </div>
-              )}
-            </div>
 
-            {/* 规则列表 */}
+            {/* 备注组列表 */}
             {mergeRules.length > 0 ? (
               <div className="space-y-3">
                 {mergeRules.map(rule => {
                   const isEditing = editingRuleId === rule.id;
                   return (
-                    <div key={rule.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
-                      {/* 名称行 */}
-                      <div className="flex items-center gap-2 mb-2.5">
+                    <div key={rule.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
+                      {/* 备注名（大） */}
+                      <div className="flex items-center gap-2 mb-3">
                         {isEditing ? (
                           <div className="flex items-center gap-2 flex-1">
                             <input value={editingTargetName}
@@ -288,7 +280,7 @@ export function DataConfig({
                           </div>
                         ) : (
                           <>
-                            <span className="font-semibold text-gray-800 flex-1">{rule.targetName}</span>
+                            <span className="text-base font-bold text-gray-900 flex-1">{rule.targetName}</span>
                             <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
                               className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
                               <Edit2 size={14} />
@@ -301,12 +293,12 @@ export function DataConfig({
                         )}
                       </div>
 
-                      {/* 别名 chips + 输入框 */}
+                      {/* 小：Excel 收付款方名 chips + 输入框 */}
                       {!isEditing && (
                         <div className="flex flex-wrap gap-1.5 items-center">
                           {rule.aliases.map(alias => (
                             <span key={alias}
-                              className="inline-flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg text-xs text-slate-600 border border-slate-200">
+                              className="inline-flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg text-xs text-slate-500 border border-slate-200">
                               {alias}
                               <button onClick={() => onRemoveAlias(rule.id, alias)}
                                 className="text-slate-300 hover:text-rose-500 transition-colors ml-0.5">
@@ -315,16 +307,14 @@ export function DataConfig({
                             </span>
                           ))}
                           <input
-                            placeholder={rule.aliases.length === 0 ? '输入 Excel 收付款方名，回车添加…' : '+ Excel 名'}
-                            className="h-7 min-w-[130px] flex-1 bg-slate-50 border border-dashed border-slate-200 rounded-lg px-2.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:bg-white transition-all"
-                            onChange={() => setAliasError('')}
+                            placeholder={rule.aliases.length === 0 ? '输入 Excel 收付款方名回车添加…' : '+ 添加 Excel 名'}
+                            className="h-7 min-w-[160px] flex-1 bg-slate-50 border border-dashed border-slate-200 rounded-lg px-2.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:bg-white transition-all"
                             onKeyDown={e => {
                               if (e.key === 'Enter') {
                                 const input = e.target as HTMLInputElement;
                                 if (input.value.trim()) {
-                                  if (validateAndAddAlias(rule.targetName, input.value.trim())) {
-                                    input.value = '';
-                                  }
+                                  validateAndAddAlias(rule.targetName, input.value.trim());
+                                  input.value = '';
                                 }
                               }
                             }} />
@@ -335,34 +325,81 @@ export function DataConfig({
                 })}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                 <Users size={32} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500">暂无合并规则</p>
-                <p className="text-sm text-gray-400 mt-1">使用上方表单添加，可以将多个不同的账单名称合并为同一个搭子</p>
+                <p className="text-gray-500 font-medium">点击下方白名单成员快速创建备注组</p>
+                <p className="text-sm text-gray-400 mt-1">也可以在备注组内手动输入 Excel 收付款方名</p>
               </div>
             )}
 
-            {/* 白名单人员快速入口 */}
+            {/* 白名单成员快速入口 */}
             {(() => {
-              const inMerge = new Set(mergeRules.map(r => r.targetName));
-              const whitelistOnly = whitelist.filter(w => w.enabled && !inMerge.has(w.name));
-              if (whitelistOnly.length === 0) return null;
+              const aliasesInMerge = new Set(mergeRules.flatMap(r => r.aliases));
+              const unassigned = whitelist.filter(w => w.enabled && !aliasesInMerge.has(w.name));
+              if (unassigned.length === 0) return null;
               return (
-                <div className="pt-4 mt-2 border-t border-dashed border-gray-200">
+                <div className="pt-4 border-t border-dashed border-gray-200">
                   <p className="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
                     <Shield size={12} />
-                    <span>白名单中还未设置合并规则的成员，点击快速创建条目</span>
+                    <span>白名单成员—点击后输入备注名，或选择合并到已有备注组</span>
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {whitelistOnly.map(item => (
-                      <button
-                        key={item.id}
-                        onClick={() => onEnsureMergeRule(item.name)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-slate-50 text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all"
-                      >
-                        <Plus size={13} />
-                        {item.name}
-                      </button>
+                    {unassigned.map(item => (
+                      <div key={item.id}>
+                        {pendingWhitelistName === item.name ? (
+                          // 展开输入备注名
+                          <div className="flex flex-col gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl min-w-[240px]">
+                            <div className="flex items-center gap-2 text-sm text-emerald-700">
+                              <span className="font-medium">{item.name}</span>
+                              <ArrowRight size={14} />
+                              <span>备注名</span>
+                            </div>
+                            <input
+                              autoFocus
+                              placeholder="输入备注名（如: 阿喵）回车确认…"
+                              value={pendingNickname}
+                              onChange={e => setPendingNickname(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') handleConfirmNickname();
+                                if (e.key === 'Escape') setPendingWhitelistName(null);
+                              }}
+                              className="px-3 py-1.5 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                            />
+                            {mergeRules.length > 0 && (
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1.5">或合并到已有备注组：</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {mergeRules.map(r => (
+                                    <button key={r.id}
+                                      onClick={() => handleAddToExistingGroup(r.targetName, item.name)}
+                                      className="px-2.5 py-1 text-xs bg-white border border-gray-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-all font-medium">
+                                      {r.targetName}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex gap-2">
+                              <button onClick={handleConfirmNickname} disabled={!pendingNickname.trim()}
+                                className="flex-1 py-1.5 text-xs bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-40 transition-colors font-medium">
+                                创建备注组
+                              </button>
+                              <button onClick={() => setPendingWhitelistName(null)}
+                                className="px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                取消
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => { setPendingWhitelistName(item.name); setPendingNickname(''); }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-slate-50 text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all"
+                          >
+                            <Plus size={13} />
+                            {item.name}
+                          </button>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
