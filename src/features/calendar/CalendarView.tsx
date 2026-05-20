@@ -11,7 +11,16 @@ const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1
 const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
 export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1));
+  // 自动定位到最新有数据的月份，否则显示当前月份
+  const [currentDate, setCurrentDate] = useState(() => {
+    const dates = Object.keys(dailyStats).sort();
+    if (dates.length > 0) {
+      const latest = dates[dates.length - 1];
+      const [year, month] = latest.split('-').map(Number);
+      return new Date(year, month - 1, 1);
+    }
+    return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState(currentDate.getFullYear());
