@@ -157,12 +157,11 @@ export function DataConfig({
                         : [...filterOptions.transactionTypes, type];
                       onFilterChange({ ...filterOptions, transactionTypes: newTypes });
                     }}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-1.5 ${
+                    className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
                       filterOptions.transactionTypes.includes(type)
                         ? 'bg-slate-800 text-white border-2 border-transparent scale-[1.02]'
                         : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                     }`}>
-                    {filterOptions.transactionTypes.includes(type) ? <Check size={14} className="text-emerald-400" /> : <span className="w-3.5" />}
                     {type}
                   </button>
                 ))}
@@ -185,14 +184,13 @@ export function DataConfig({
                         : [...filterOptions.directionTypes, value];
                       onFilterChange({ ...filterOptions, directionTypes: newDirs });
                     }}
-                    className={`px-6 py-3 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2 ${
+                    className={`px-6 py-3 rounded-xl font-medium transition-all shadow-sm ${
                       filterOptions.directionTypes.includes(value)
                         ? color === 'emerald'
                           ? 'bg-emerald-500 text-white border-2 border-transparent scale-[1.02]'
                           : 'bg-rose-500 text-white border-2 border-transparent scale-[1.02]'
                         : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                     }`}>
-                    {filterOptions.directionTypes.includes(value) ? <Check size={16} className="text-white/90" /> : <span className="w-4" />}
                     {label}
                   </button>
                 ))}
