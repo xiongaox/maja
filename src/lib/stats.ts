@@ -20,7 +20,10 @@ export function calculateStats(transactions: Transaction[]): Stats {
 
   let latestDateStr = todayStr;
   if (transactions.length > 0) {
-    latestDateStr = transactions.map(t => t.date.split(' ')[0]).sort().reverse()[0];
+    latestDateStr = transactions.reduce((max, t) => {
+      const d = t.date.split(' ')[0];
+      return d > max ? d : max;
+    }, '');
   }
   let latestDayNet = 0;
 
