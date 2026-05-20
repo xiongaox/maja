@@ -31,6 +31,7 @@ interface DataConfigProps {
   onRemoveAlias: (ruleId: string, alias: string) => void;
   onUpdateTargetName: (ruleId: string, newTargetName: string) => void;
   onClearMergeRules: () => void;
+  onEnsureMergeRule: (targetName: string) => void;
   onFilterChange: (options: FilterOptions) => void;
   suggestedNames: string[];
   originalNames: string[];
@@ -68,7 +69,7 @@ export function DataConfig({
   transactions, mergeRules, whitelist, filterOptions, stats,
   onAddWhitelist, onRemoveWhitelist, onToggleWhitelist, onClearWhitelist, onBatchAddWhitelist,
   onAddMergeRule, onRemoveMergeRule, onRemoveAlias, onUpdateTargetName, onClearMergeRules,
-  onFilterChange, suggestedNames, originalNames,
+  onFilterChange, suggestedNames, originalNames, onEnsureMergeRule,
 }: DataConfigProps) {
   const [activeTab, setActiveTab] = useState<'filter' | 'merge' | 'whitelist'>('filter');
   
@@ -362,6 +363,33 @@ export function DataConfig({
                 <p className="text-sm text-gray-400 mt-1">使用上方表单添加，可以将多个不同的账单名称合并为同一个搭子</p>
               </div>
             )}
+
+            {/* 白名单人员快速入口 */}
+            {(() => {
+              const inMerge = new Set(mergeRules.map(r => r.targetName));
+              const whitelistOnly = whitelist.filter(w => w.enabled && !inMerge.has(w.name));
+              if (whitelistOnly.length === 0) return null;
+              return (
+                <div className="pt-4 mt-2 border-t border-dashed border-gray-200">
+                  <p className="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
+                    <Shield size={12} />
+                    <span>白名单中还未设置合并规则的成员，点击快速创建条目</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {whitelistOnly.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => onEnsureMergeRule(item.name)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-slate-50 text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all"
+                      >
+                        <Plus size={13} />
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 

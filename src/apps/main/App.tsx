@@ -180,6 +180,15 @@ export default function MahjongTracker() {
     });
   }, []);
 
+  // 确保指定名字有合并规则条目（没有则自动创建空的）
+  const handleEnsureMergeRule = useCallback((targetName: string) => {
+    setMergeRules(prev => {
+      const existing = prev.find(r => r.targetName === targetName);
+      if (existing) return prev;
+      return [...prev, { id: `rule-${Date.now()}`, targetName, aliases: [] }];
+    });
+  }, []);
+
   const handleRemoveMergeRule = useCallback((ruleId: string) => {
     setMergeRules(prev => prev.filter(rule => rule.id !== ruleId));
   }, []);
@@ -652,6 +661,7 @@ export default function MahjongTracker() {
               onRemoveAlias={handleRemoveAlias}
               onUpdateTargetName={handleUpdateTargetName}
               onClearMergeRules={handleClearMergeRules}
+              onEnsureMergeRule={handleEnsureMergeRule}
               onFilterChange={setFilterOptions}
               suggestedNames={suggestedNames}
               originalNames={originalNames}
