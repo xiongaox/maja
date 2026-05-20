@@ -20,7 +20,7 @@ export const DEFAULT_FILTER_OPTIONS: FilterOptions = {
   transactionTypes: ['扫二维码付款', '二维码付款', '商户消费', '二维码收款'],
   directionTypes: ['收入', '支出'],
   minAmount: 1,
-  maxAmount: 20,
+  maxAmount: 200,
 };
 
 // 管道处理结果
