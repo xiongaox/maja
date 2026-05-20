@@ -5,9 +5,10 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import {
   AlertCircle, CheckCircle2, Loader2, Menu,
-  LayoutDashboard, Calendar as CalendarIcon, Settings as SettingsIcon, Download, Upload
+  LayoutDashboard, Calendar as CalendarIcon, Settings as SettingsIcon, Download, Upload, Trash2
 } from 'lucide-react';
 import { Dashboard } from '../../features/dashboard/Dashboard';
 import { CalendarView } from '../../features/calendar/CalendarView';
@@ -22,7 +23,13 @@ const STORAGE_KEYS = {
   WHITELIST: 'maja_whitelist',
   MERGE_RULES: 'maja_merge_rules',
   FILTER_OPTIONS: 'maja_filter_options',
+  TRANSACTIONS: 'maja_transactions',
 };
+
+// 生成交易去重 key
+function txKey(t: { date: string; name: string; amount: number }) {
+  return `${t.date}|${t.name}|${t.amount}`;
+}
 
 // 侧边栏菜单项
 const SidebarItem = ({ icon: Icon, label, id, activeTab, onClick }: {
@@ -48,7 +55,10 @@ export default function MahjongTracker() {
   // 状态
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -82,6 +92,10 @@ export default function MahjongTracker() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.FILTER_OPTIONS, JSON.stringify(filterOptions));
   }, [filterOptions]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+  }, [transactions]);
 
   // 使用数据管道处理交易数据
   const pipelineResult = useMemo(() => {
@@ -200,17 +214,6 @@ export default function MahjongTracker() {
     setSuccessMsg('');
 
     try {
-      // 动态加载 XLSX 库
-      const XLSX = await (async () => {
-        if ((window as any).XLSX) return (window as any).XLSX;
-        return new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-          script.onload = () => resolve((window as any).XLSX);
-          script.onerror = () => reject(new Error('无法加载 Excel 解析库，请检查网络'));
-          document.head.appendChild(script);
-        });
-      })();
 
       const newTransactions: Transaction[] = [];
 
@@ -316,8 +319,18 @@ export default function MahjongTracker() {
       }
 
       if (newTransactions.length > 0) {
-        setTransactions(prev => [...prev, ...newTransactions]);
-        setSuccessMsg(`成功导入 ${newTransactions.length} 条记录！`);
+        // 去重：基于 日期+名称+金额 三元组
+        setTransactions(prev => {
+          const existingKeys = new Set(prev.map(t => txKey(t)));
+          const unique = newTransactions.filter(t => !existingKeys.has(txKey(t)));
+          const skipped = newTransactions.length - unique.length;
+          if (skipped > 0) {
+            setSuccessMsg(`成功导入 ${unique.length} 条记录，跳过 ${skipped} 条重复记录`);
+          } else {
+            setSuccessMsg(`成功导入 ${unique.length} 条记录！`);
+          }
+          return [...prev, ...unique];
+        });
       } else {
         setErrorMsg('未能识别到有效的账单记录，请确保上传的是微信或支付宝导出的账单表格。');
       }
@@ -326,8 +339,7 @@ export default function MahjongTracker() {
     } finally {
       setIsUploading(false);
       // 清除文件输入
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, []);
 
@@ -459,6 +471,22 @@ export default function MahjongTracker() {
               className="hidden"
             />
           </label>
+
+          {/* 清空数据按钮 */}
+          {transactions.length > 0 && (
+            <button
+              onClick={() => {
+                if (confirm(`确定要清空所有 ${transactions.length} 条交易数据吗？此操作不可撤销。`)) {
+                  setTransactions([]);
+                  setSuccessMsg('所有交易数据已清空');
+                }
+              }}
+              className="w-full py-2.5 text-sm bg-rose-50 text-rose-600 font-medium rounded-xl hover:bg-rose-100 transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 size={16} />
+              清空数据 ({transactions.length})
+            </button>
+          )}
         </div>
       </aside>
 
