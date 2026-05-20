@@ -145,7 +145,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
               <Tooltip
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                formatter={(value: any, name: string) => [`${value} 元`, name]}
+                formatter={(value: any, name: any) => [`${value} 元`, name]}
               />
               <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
               <Line
@@ -168,112 +168,6 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <PieChart size={20} className="text-emerald-500" />
-            <h3 className="text-lg font-bold text-gray-900">各家交锋战绩</h3>
-          </div>
-          {Object.keys(stats.playerStats).length > 0 ? (
-            <div className="space-y-4">
-              {Object.values(stats.playerStats).sort((a, b) => b.net - a.net).map(player => {
-                const maxAbs = Math.max(...Object.values(stats.playerStats).map(p => Math.abs(p.net)));
-                const widthPct = maxAbs === 0 ? 0 : (Math.abs(player.net) / maxAbs) * 100;
-                const isPositive = player.net >= 0;
-                return (
-                  <div key={player.name} className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-bold text-gray-800">{player.name}</span>
-                      <span className={`font-bold text-lg ${isPositive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                        {isPositive ? '+' : ''}{player.net.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <TrendingUp size={14} className="text-emerald-400" />
-                        <span className="text-gray-500">收入:</span>
-                        <span className="font-medium text-emerald-600">+{player.win.toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <TrendingDown size={14} className="text-rose-400" />
-                        <span className="text-gray-500">支出:</span>
-                        <span className="font-medium text-rose-600">-{player.loss.toFixed(2)}</span>
-                      </div>
-                    </div>
-                    <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden mt-2">
-                      <div className={`h-full rounded-full transition-all duration-700 ease-out ${isPositive ? 'bg-emerald-400' : 'bg-rose-400'}`} style={{ width: `${widthPct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-10 text-gray-400 text-sm">暂无数据，请先导入账单</div>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-500">
-              <Award size={28} />
-            </div>
-            <div>
-              <p className="text-amber-700/70 text-sm font-bold tracking-widest mb-1">你的专属提款机</p>
-              {stats.atm ? (
-                <div className="flex items-end gap-2">
-                  <span className="text-2xl font-black text-amber-700">{stats.atm}</span>
-                  <span className="text-amber-600 font-bold mb-1">+{stats.maxWinFromPlayer.toFixed(2)}</span>
-                </div>
-              ) : <span className="text-amber-800/50">暂无</span>}
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-2xl border border-rose-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-rose-500">
-              <Frown size={28} />
-            </div>
-            <div>
-              <p className="text-rose-700/70 text-sm font-bold tracking-widest mb-1">你的麻将宿敌</p>
-              {stats.nemesis ? (
-                <div className="flex items-end gap-2">
-                  <span className="text-2xl font-black text-rose-700">{stats.nemesis}</span>
-                  <span className="text-rose-600 font-bold mb-1">{stats.maxLossToPlayer.toFixed(2)}</span>
-                </div>
-              ) : <span className="text-rose-800/50">暂无</span>}
-            </div>
-          </div>
-
-          {/* 数据汇总卡片 */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h4 className="font-bold text-gray-700 mb-4">📊 数据汇总</h4>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">交易总笔数</span>
-                <span className="font-bold text-gray-800">{normalizedTransactions.length} 笔</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">收付款方数量</span>
-                <span className="font-bold text-gray-800">{Object.keys(stats.playerStats).length} 人</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">总收入</span>
-                <span className="font-bold text-emerald-600">+{stats.totalWin.toFixed(2)} 元</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">总支出</span>
-                <span className="font-bold text-rose-600">-{stats.totalLoss.toFixed(2)} 元</span>
-              </div>
-              <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                <span className="text-gray-700 font-medium">净盈亏</span>
-                <span className={`font-bold text-lg ${stats.netProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  {stats.netProfit > 0 ? '+' : ''}{stats.netProfit.toFixed(2)} 元
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       </>

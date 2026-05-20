@@ -8,16 +8,17 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import {
   AlertCircle, CheckCircle2, Loader2, Menu,
-  LayoutDashboard, Calendar as CalendarIcon, Settings as SettingsIcon, Download, Upload, Trash2
+  LayoutDashboard, Calendar as CalendarIcon, Settings as SettingsIcon, Download, Upload, Trash2, Swords
 } from 'lucide-react';
 import { Dashboard } from '../../features/dashboard/Dashboard';
+import { PlayerStats } from '../../features/stats/PlayerStats';
 import { CalendarView } from '../../features/calendar/CalendarView';
 import { DataConfig } from '../../features/config/DataConfig';
 import { buildPipeline, DEFAULT_FILTER_OPTIONS, type FilterOptions } from '../../lib/pipeline';
 import { calculateStats, calculateDailyStats } from '../../lib/stats';
 import type { Transaction, MergeRule, WhitelistItem } from '../../types';
 
-type TabId = 'dashboard' | 'calendar' | 'config';
+type TabId = 'dashboard' | 'stats' | 'calendar' | 'config';
 
 const STORAGE_KEYS = {
   WHITELIST: 'maja_whitelist',
@@ -503,6 +504,7 @@ export default function MahjongTracker() {
 
         <nav className="flex-1 px-4 py-4 md:py-0 space-y-2 mt-4 md:mt-0">
           <SidebarItem icon={LayoutDashboard} label="数据概览" id="dashboard" activeTab={activeTab} onClick={handleTabClick} />
+          <SidebarItem icon={Swords} label="交锋战绩" id="stats" activeTab={activeTab} onClick={handleTabClick} />
           <SidebarItem icon={CalendarIcon} label="战绩日历" id="calendar" activeTab={activeTab} onClick={handleTabClick} />
           <SidebarItem icon={SettingsIcon} label="数据配置" id="config" activeTab={activeTab} onClick={handleTabClick} />
         </nav>
@@ -595,6 +597,13 @@ export default function MahjongTracker() {
               fileInputRef={fileInputRef}
               isUploading={isUploading}
               whitelistCount={whitelist.length}
+            />
+          )}
+
+          {activeTab === 'stats' && (
+            <PlayerStats
+              stats={stats}
+              normalizedTransactions={pipelineResult.final}
             />
           )}
 
