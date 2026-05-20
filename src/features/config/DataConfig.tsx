@@ -3,7 +3,7 @@
  */
 
 import React, { useState } from 'react';
-import { 
+import {
   Filter, Users, Shield,
   Plus, Trash2, Search, ArrowRight, Zap, Edit2, Check, X
 } from 'lucide-react';
@@ -72,16 +72,16 @@ export function DataConfig({
   onFilterChange, suggestedNames, originalNames, onEnsureMergeRule,
 }: DataConfigProps) {
   const [activeTab, setActiveTab] = useState<'filter' | 'merge' | 'whitelist'>('filter');
-  
+
+  // 白名单 tab 状态
   const [newName, setNewName] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [targetName, setTargetName] = useState('');
-  const [aliasName, setAliasName] = useState('');
-  const [aliasError, setAliasError] = useState('');
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
+
+  // 搭子合并 tab 状态
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editingTargetName, setEditingTargetName] = useState('');
-  // 快速入口：点击白名单后等待输入备注名
+  // 点击白名单名字后，等待输入备注名
   const [pendingWhitelistName, setPendingWhitelistName] = useState<string | null>(null);
   const [pendingNickname, setPendingNickname] = useState('');
 
@@ -94,33 +94,12 @@ export function DataConfig({
     if (newName.trim()) { onAddWhitelist(newName.trim()); setNewName(''); }
   };
 
-  // 确认备注名：将白名单名添加为指定备注名的 alias
+  // 确认备注名 → 创建新备注组
   const handleConfirmNickname = () => {
     if (!pendingWhitelistName || !pendingNickname.trim()) return;
     onAddMergeRule(pendingNickname.trim(), pendingWhitelistName);
     setPendingWhitelistName(null);
     setPendingNickname('');
-  };
-
-  // 将白名单名添加到已有备注组
-  const handleAddToExistingGroup = (targetRuleName: string, whitelistName: string) => {
-    onAddMergeRule(targetRuleName, whitelistName);
-    setPendingWhitelistName(null);
-    setPendingNickname('');
-  };
-
-  const validateAndAddAlias = (tName: string, aName: string): boolean => {
-    onAddMergeRule(tName, aName);
-    setAliasError('');
-    return true;
-  };
-
-  const handleAddMergeRule = () => {
-    if (targetName.trim() && aliasName.trim()) {
-      if (validateAndAddAlias(targetName.trim(), aliasName.trim())) {
-        setTargetName(''); setAliasName('');
-      }
-    }
   };
 
   const tabs: Array<{ id: string; label: string; icon: React.ElementType; count?: number }> = [
@@ -171,7 +150,8 @@ export function DataConfig({
 
       {/* Tab 内容区 */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm min-h-[400px]">
-        {/* 筛选条件 */}
+
+        {/* ── 筛选条件 ── */}
         {activeTab === 'filter' && (
           <div className="p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2">
             <div>
@@ -195,9 +175,9 @@ export function DataConfig({
                 ))}
               </div>
             </div>
-            
+
             <hr className="border-gray-100" />
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">收支方向</label>
               <div className="flex gap-3">
@@ -224,9 +204,9 @@ export function DataConfig({
                 ))}
               </div>
             </div>
-            
+
             <hr className="border-gray-100" />
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">金额区间（元）</label>
               <div className="flex items-center gap-4">
@@ -250,142 +230,161 @@ export function DataConfig({
           </div>
         )}
 
-        {/* 搭子合并 */}
+        {/* ── 搭子合并 ── */}
         {activeTab === 'merge' && (
-          <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex flex-col min-h-[400px] animate-in fade-in slide-in-from-bottom-2">
 
-            {/* 备注组列表 */}
-            {mergeRules.length > 0 ? (
-              <div className="space-y-3">
-                {mergeRules.map(rule => {
-                  const isEditing = editingRuleId === rule.id;
-                  return (
-                    <div key={rule.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3.5 shadow-sm">
-                      {/* 备注名（大） */}
-                      <div className="flex items-center gap-2 mb-3">
-                        {isEditing ? (
-                          <div className="flex items-center gap-2 flex-1">
-                            <input value={editingTargetName}
-                              onChange={e => setEditingTargetName(e.target.value)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }
-                                if (e.key === 'Escape') setEditingRuleId(null);
-                              }}
-                              className="flex-1 bg-white border border-emerald-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                              autoFocus />
-                            <button onClick={() => { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }}
-                              className="text-emerald-600 hover:text-emerald-700 p-1 bg-emerald-50 rounded"><Check size={16} /></button>
-                            <button onClick={() => setEditingRuleId(null)}
-                              className="text-gray-500 hover:text-gray-700 p-1 bg-gray-100 rounded"><X size={16} /></button>
-                          </div>
-                        ) : (
-                          <>
-                            <span className="text-base font-bold text-gray-900 flex-1">{rule.targetName}</span>
-                            <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
-                              className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                              <Edit2 size={14} />
-                            </button>
-                            <button onClick={() => onRemoveMergeRule(rule.id)}
-                              className="p-1.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
-                              <Trash2 size={14} />
-                            </button>
-                          </>
-                        )}
-                      </div>
+            {/* 已创建的备注组列表（上方主区域） */}
+            <div className="flex-1 p-4 md:p-6 space-y-3">
+              {mergeRules.length > 0 ? mergeRules.map(rule => {
+                const isEditing = editingRuleId === rule.id;
+                return (
+                  <div key={rule.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
 
-                      {/* 小：Excel 收付款方名 chips + 输入框 */}
-                      {!isEditing && (
-                        <div className="flex flex-wrap gap-1.5 items-center">
-                          {rule.aliases.map(alias => (
-                            <span key={alias}
-                              className="inline-flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg text-xs text-slate-500 border border-slate-200">
-                              {alias}
-                              <button onClick={() => onRemoveAlias(rule.id, alias)}
-                                className="text-slate-300 hover:text-rose-500 transition-colors ml-0.5">
-                                <X size={11} />
-                              </button>
-                            </span>
-                          ))}
+                    {/* 备注名 —— 大字标题行 */}
+                    <div className="flex items-center gap-2 px-4 pt-4 pb-2.5">
+                      {isEditing ? (
+                        <div className="flex items-center gap-2 flex-1">
                           <input
-                            placeholder={rule.aliases.length === 0 ? '输入 Excel 收付款方名回车添加…' : '+ 添加 Excel 名'}
-                            className="h-7 min-w-[160px] flex-1 bg-slate-50 border border-dashed border-slate-200 rounded-lg px-2.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:bg-white transition-all"
+                            autoFocus
+                            value={editingTargetName}
+                            onChange={e => setEditingTargetName(e.target.value)}
                             onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                const input = e.target as HTMLInputElement;
-                                if (input.value.trim()) {
-                                  validateAndAddAlias(rule.targetName, input.value.trim());
-                                  input.value = '';
-                                }
-                              }
-                            }} />
+                              if (e.key === 'Enter') { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }
+                              if (e.key === 'Escape') setEditingRuleId(null);
+                            }}
+                            className="flex-1 text-lg font-bold bg-transparent border-b-2 border-emerald-400 outline-none text-gray-900 pb-0.5"
+                          />
+                          <button onClick={() => { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }}
+                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Check size={16} /></button>
+                          <button onClick={() => setEditingRuleId(null)}
+                            className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg"><X size={16} /></button>
                         </div>
+                      ) : (
+                        <>
+                          <span className="flex-1 text-lg font-bold text-gray-900">{rule.targetName}</span>
+                          <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
+                            className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                            <Edit2 size={14} />
+                          </button>
+                          <button onClick={() => onRemoveMergeRule(rule.id)}
+                            className="p-1.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <Users size={32} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500 font-medium">点击下方白名单成员快速创建备注组</p>
-                <p className="text-sm text-gray-400 mt-1">也可以在备注组内手动输入 Excel 收付款方名</p>
-              </div>
-            )}
 
-            {/* 白名单成员快速入口 */}
+                    {/* 收付款方名 —— 小 chip 行 */}
+                    {!isEditing && (
+                      <div className="flex flex-wrap gap-1.5 items-center px-4 pb-4">
+                        {rule.aliases.map(alias => (
+                          <span key={alias}
+                            className="inline-flex items-center gap-1 bg-slate-50 text-slate-500 text-xs px-2.5 py-1 rounded-lg border border-slate-200">
+                            {alias}
+                            <button onClick={() => onRemoveAlias(rule.id, alias)}
+                              className="text-slate-300 hover:text-rose-400 transition-colors ml-0.5">
+                              <X size={11} />
+                            </button>
+                          </span>
+                        ))}
+                        {/* 可手动补充 Excel 名 */}
+                        <input
+                          placeholder={rule.aliases.length === 0
+                            ? '点击下方名字添加，或手动输入 Excel 收付款方名回车…'
+                            : '+ 继续添加'}
+                          className="h-7 min-w-[160px] flex-1 text-xs text-slate-400 placeholder-slate-300 bg-transparent border-none outline-none"
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              const el = e.target as HTMLInputElement;
+                              if (el.value.trim()) { onAddMergeRule(rule.targetName, el.value.trim()); el.value = ''; }
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              }) : (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <Users size={44} className="text-gray-200 mb-4" />
+                  <p className="text-gray-400 font-medium text-base">还没有备注组</p>
+                  <p className="text-sm text-gray-300 mt-1.5">从下方点击收付款方，给他起一个备注名</p>
+                </div>
+              )}
+            </div>
+
+            {/* 底部区域 —— 白名单成员（未分组） */}
             {(() => {
-              const aliasesInMerge = new Set(mergeRules.flatMap(r => r.aliases));
-              const unassigned = whitelist.filter(w => w.enabled && !aliasesInMerge.has(w.name));
+              const assigned = new Set(mergeRules.flatMap(r => r.aliases));
+              const unassigned = whitelist.filter(w => w.enabled && !assigned.has(w.name));
+
+              if (whitelist.filter(w => w.enabled).length > 0 && unassigned.length === 0) {
+                return (
+                  <div className="px-4 py-3 border-t border-gray-100 text-xs text-center text-gray-400">
+                    所有白名单成员已全部分配备注组 ✓
+                  </div>
+                );
+              }
               if (unassigned.length === 0) return null;
+
               return (
-                <div className="pt-4 border-t border-dashed border-gray-200">
-                  <p className="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
-                    <Shield size={12} />
-                    <span>白名单成员—点击后输入备注名，或选择合并到已有备注组</span>
+                <div className="border-t border-gray-100 bg-slate-50/80 rounded-b-xl px-4 py-4">
+                  <p className="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
+                    <Shield size={12} className="text-slate-300" />
+                    点击下方收付款方，为他起备注名；一个备注名可关联多个收付款方
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {unassigned.map(item => (
                       <div key={item.id}>
                         {pendingWhitelistName === item.name ? (
-                          // 展开输入备注名
-                          <div className="flex flex-col gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl min-w-[240px]">
-                            <div className="flex items-center gap-2 text-sm text-emerald-700">
-                              <span className="font-medium">{item.name}</span>
-                              <ArrowRight size={14} />
+                          /* 展开卡片：输入备注名 */
+                          <div className="flex flex-col gap-2.5 p-3 bg-white border border-emerald-200 rounded-2xl shadow-lg min-w-[260px]">
+                            <div className="flex items-center gap-2 text-xs text-slate-400">
+                              <span className="font-semibold text-slate-700 text-sm">{item.name}</span>
+                              <ArrowRight size={13} className="text-emerald-400" />
                               <span>备注名</span>
                             </div>
                             <input
                               autoFocus
-                              placeholder="输入备注名（如: 阿喵）回车确认…"
+                              placeholder="输入备注名，回车确认（如：阿喵）"
                               value={pendingNickname}
                               onChange={e => setPendingNickname(e.target.value)}
                               onKeyDown={e => {
                                 if (e.key === 'Enter') handleConfirmNickname();
-                                if (e.key === 'Escape') setPendingWhitelistName(null);
+                                if (e.key === 'Escape') { setPendingWhitelistName(null); setPendingNickname(''); }
                               }}
-                              className="px-3 py-1.5 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                              className="text-sm font-semibold text-gray-800 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 bg-gray-50 placeholder-gray-300"
                             />
+                            {/* 或归入已有备注组 */}
                             {mergeRules.length > 0 && (
                               <div>
-                                <p className="text-xs text-gray-500 mb-1.5">或合并到已有备注组：</p>
+                                <p className="text-xs text-gray-400 mb-1.5">或归入已有备注组：</p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {mergeRules.map(r => (
                                     <button key={r.id}
-                                      onClick={() => handleAddToExistingGroup(r.targetName, item.name)}
-                                      className="px-2.5 py-1 text-xs bg-white border border-gray-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-all font-medium">
+                                      onClick={() => {
+                                        onAddMergeRule(r.targetName, item.name);
+                                        setPendingWhitelistName(null);
+                                        setPendingNickname('');
+                                      }}
+                                      className="px-3 py-1 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-all">
                                       {r.targetName}
                                     </button>
                                   ))}
                                 </div>
                               </div>
                             )}
-                            <div className="flex gap-2">
-                              <button onClick={handleConfirmNickname} disabled={!pendingNickname.trim()}
-                                className="flex-1 py-1.5 text-xs bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-40 transition-colors font-medium">
+                            <div className="flex gap-2 pt-0.5">
+                              <button
+                                onClick={handleConfirmNickname}
+                                disabled={!pendingNickname.trim()}
+                                className="flex-1 py-1.5 text-xs font-semibold bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-40 transition-colors">
                                 创建备注组
                               </button>
-                              <button onClick={() => setPendingWhitelistName(null)}
-                                className="px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                              <button
+                                onClick={() => { setPendingWhitelistName(null); setPendingNickname(''); }}
+                                className="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
                                 取消
                               </button>
                             </div>
@@ -393,8 +392,7 @@ export function DataConfig({
                         ) : (
                           <button
                             onClick={() => { setPendingWhitelistName(item.name); setPendingNickname(''); }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-slate-50 text-slate-600 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all"
-                          >
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-md transition-all">
                             <Plus size={13} />
                             {item.name}
                           </button>
@@ -408,7 +406,7 @@ export function DataConfig({
           </div>
         )}
 
-        {/* 收付款白名单 */}
+        {/* ── 收付款白名单 ── */}
         {activeTab === 'whitelist' && (
           <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row gap-3">
@@ -426,7 +424,7 @@ export function DataConfig({
                   全部添加智能推荐
                 </button>
                 {whitelist.length > 0 && (
-                  <button onClick={() => { if(window.confirm('确定要清空所有白名单吗？')) onClearWhitelist() }}
+                  <button onClick={() => { if (window.confirm('确定要清空所有白名单吗？')) onClearWhitelist(); }}
                     className="px-4 py-2.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors text-sm font-medium whitespace-nowrap flex items-center gap-1.5">
                     <Trash2 size={16} />
                     清空
@@ -454,8 +452,8 @@ export function DataConfig({
                     <span className="font-medium">{item.name}</span>
                     <button onClick={e => { e.stopPropagation(); onRemoveWhitelist(item.id); }}
                       className={`ml-1 p-1 rounded-md transition-colors ${
-                        item.enabled 
-                          ? 'text-emerald-400 hover:bg-emerald-200/50 hover:text-emerald-700' 
+                        item.enabled
+                          ? 'text-emerald-400 hover:bg-emerald-200/50 hover:text-emerald-700'
                           : 'text-slate-300 hover:bg-slate-200/50 hover:text-rose-500'
                       }`}>
                       <X size={14} />
