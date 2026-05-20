@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { 
-  Filter, Users, Shield, ChevronRight,
+  Filter, Users, Shield,
   Plus, Trash2, Search, ArrowRight, Zap, Edit2, Check, X
 } from 'lucide-react';
 import type { Transaction, MergeRule, WhitelistItem } from '../../types';
@@ -79,7 +79,6 @@ export function DataConfig({
   const [aliasName, setAliasName] = useState('');
   const [aliasError, setAliasError] = useState('');
   const [showAllSuggestions, setShowAllSuggestions] = useState(false);
-  const [expandedRule, setExpandedRule] = useState<string | null>(null);
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [editingTargetName, setEditingTargetName] = useState('');
 
@@ -265,91 +264,70 @@ export function DataConfig({
 
             {/* 规则列表 */}
             {mergeRules.length > 0 ? (
-              <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100 shadow-sm">
+              <div className="space-y-3">
                 {mergeRules.map(rule => {
-                  const isExpanded = expandedRule === rule.id;
                   const isEditing = editingRuleId === rule.id;
                   return (
-                    <div key={rule.id} className="bg-white">
-                      <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                        <button
-                          onClick={() => setExpandedRule(isExpanded ? null : rule.id)}
-                          className="flex-shrink-0 p-1 text-gray-400 hover:text-emerald-500 bg-white border border-gray-200 rounded-full shadow-sm"
-                        >
-                          <ChevronRight size={14} className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                        </button>
-
-                        <div className="flex-1 min-w-0">
-                          {isEditing ? (
-                            <div className="flex items-center gap-2">
-                              <input value={editingTargetName}
-                                onChange={e => setEditingTargetName(e.target.value)}
-                                onKeyDown={e => {
-                                  if (e.key === 'Enter') { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }
-                                  if (e.key === 'Escape') setEditingRuleId(null);
-                                }}
-                                className="flex-1 bg-white border border-emerald-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
-                                autoFocus />
-                              <button onClick={() => { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }}
-                                className="text-emerald-600 hover:text-emerald-700 p-1 bg-emerald-50 rounded"><Check size={16} /></button>
-                              <button onClick={() => setEditingRuleId(null)}
-                                className="text-gray-500 hover:text-gray-700 p-1 bg-gray-100 rounded"><X size={16} /></button>
-                            </div>
-                          ) : (
-                            <button onClick={() => setExpandedRule(isExpanded ? null : rule.id)}
-                              className="text-left w-full truncate text-gray-800 font-medium">
-                              {rule.targetName}
-                            </button>
-                          )}
-                        </div>
-
-                        <span className="flex-shrink-0 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
-                          {rule.aliases.length}个别名
-                        </span>
-
-                        {!isEditing && (
-                          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                    <div key={rule.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+                      {/* 名称行 */}
+                      <div className="flex items-center gap-2 mb-2.5">
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <input value={editingTargetName}
+                              onChange={e => setEditingTargetName(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }
+                                if (e.key === 'Escape') setEditingRuleId(null);
+                              }}
+                              className="flex-1 bg-white border border-emerald-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                              autoFocus />
+                            <button onClick={() => { onUpdateTargetName(rule.id, editingTargetName.trim()); setEditingRuleId(null); }}
+                              className="text-emerald-600 hover:text-emerald-700 p-1 bg-emerald-50 rounded"><Check size={16} /></button>
+                            <button onClick={() => setEditingRuleId(null)}
+                              className="text-gray-500 hover:text-gray-700 p-1 bg-gray-100 rounded"><X size={16} /></button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="font-semibold text-gray-800 flex-1">{rule.targetName}</span>
                             <button onClick={() => { setEditingRuleId(rule.id); setEditingTargetName(rule.targetName); }}
-                              className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                              <Edit2 size={16} />
+                              className="p-1.5 text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                              <Edit2 size={14} />
                             </button>
                             <button onClick={() => onRemoveMergeRule(rule.id)}
-                              className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
-                              <Trash2 size={16} />
+                              className="p-1.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                              <Trash2 size={14} />
                             </button>
-                          </div>
+                          </>
                         )}
                       </div>
 
-                      {isExpanded && !isEditing && (
-                        <div className="px-4 pb-4 pt-1 bg-gray-50/50">
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {rule.aliases.map(alias => (
-                              <span key={alias}
-                                className="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-200 shadow-sm group">
-                                {alias}
-                                <button onClick={() => onRemoveAlias(rule.id, alias)}
-                                  className="text-gray-300 hover:text-rose-500 transition-colors">
-                                  <X size={14} />
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                          <div className="flex max-w-sm">
-                            <input placeholder="输入新别名后回车添加..."
-                              className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
-                              onChange={() => setAliasError('')}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') {
-                                  const input = e.target as HTMLInputElement;
-                                  if (input.value.trim()) { 
-                                    if (validateAndAddAlias(rule.targetName, input.value.trim())) {
-                                      input.value = ''; 
-                                    }
+                      {/* 别名 chips + 输入框 */}
+                      {!isEditing && (
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {rule.aliases.map(alias => (
+                            <span key={alias}
+                              className="inline-flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-lg text-xs text-slate-600 border border-slate-200">
+                              {alias}
+                              <button onClick={() => onRemoveAlias(rule.id, alias)}
+                                className="text-slate-300 hover:text-rose-500 transition-colors ml-0.5">
+                                <X size={11} />
+                              </button>
+                            </span>
+                          ))}
+                          <input
+                            placeholder={rule.aliases.length === 0 ? '输入别名回车添加…' : '+ 别名'}
+                            className="h-7 min-w-[130px] flex-1 bg-slate-50 border border-dashed border-slate-200 rounded-lg px-2.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:bg-white transition-all"
+                            onChange={() => setAliasError('')}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                const input = e.target as HTMLInputElement;
+                                if (input.value.trim()) {
+                                  if (validateAndAddAlias(rule.targetName, input.value.trim())) {
+                                    input.value = '';
                                   }
                                 }
-                              }} />
-                          </div>
+                              }
+                            }} />
                         </div>
                       )}
                     </div>
