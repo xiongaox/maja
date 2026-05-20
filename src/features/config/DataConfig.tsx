@@ -90,13 +90,14 @@ export function DataConfig({
   const handleAddWhitelist = () => {
     if (newName.trim()) { onAddWhitelist(newName.trim()); setNewName(''); }
   };
-  const validateAndAddAlias = (tName: string, aName: string) => {
+  const validateAndAddAlias = (tName: string, aName: string): boolean => {
+    // 只软警告，不阻止添加
     if (!originalNames.includes(aName)) {
-      setAliasError(`添加失败：原名称 "${aName}" 在导入的账单数据中不存在。`);
-      return false;
+      setAliasError(`警告："${aName}" 在导入账单中未找到，已强制添加`);
+    } else {
+      setAliasError('');
     }
     onAddMergeRule(tName, aName);
-    setAliasError('');
     return true;
   };
 
@@ -241,12 +242,12 @@ export function DataConfig({
             {/* 添加规则 */}
             <div className="space-y-2">
               <div className="flex flex-col sm:flex-row gap-3">
-                <input value={targetName} onChange={e => { setTargetName(e.target.value); setAliasError(''); }}
-                  placeholder="目标名字 (如: 阿喵)"
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
                 <input value={aliasName} onChange={e => { setAliasName(e.target.value); setAliasError(''); }}
+                  placeholder="Excel 收付款方名（如: 美味点）"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
+                <input value={targetName} onChange={e => { setTargetName(e.target.value); setAliasError(''); }}
                   onKeyDown={e => e.key === 'Enter' && handleAddMergeRule()}
-                  placeholder="原名称 (如: 美味点)"
+                  placeholder="你叫他的昵称（如: 阿喵）"
                   className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
                 <button onClick={handleAddMergeRule} disabled={!targetName.trim() || !aliasName.trim()}
                   className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium">
@@ -255,9 +256,8 @@ export function DataConfig({
                 </button>
               </div>
               {aliasError && (
-                <div className="text-sm text-rose-500 flex items-center gap-1.5 px-1 animate-in slide-in-from-top-1">
-                  <X size={14} className="flex-shrink-0" />
-                  <span>{aliasError}</span>
+                <div className="text-sm text-amber-500 flex items-center gap-1.5 px-1 animate-in slide-in-from-top-1">
+                  <span>⚠️ {aliasError}</span>
                 </div>
               )}
             </div>
@@ -315,7 +315,7 @@ export function DataConfig({
                             </span>
                           ))}
                           <input
-                            placeholder={rule.aliases.length === 0 ? '输入别名回车添加…' : '+ 别名'}
+                            placeholder={rule.aliases.length === 0 ? '输入 Excel 收付款方名，回车添加…' : '+ Excel 名'}
                             className="h-7 min-w-[130px] flex-1 bg-slate-50 border border-dashed border-slate-200 rounded-lg px-2.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:bg-white transition-all"
                             onChange={() => setAliasError('')}
                             onKeyDown={e => {
