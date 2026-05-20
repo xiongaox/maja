@@ -5,7 +5,8 @@
 import React, { useState } from 'react';
 import {
   Filter, Users, Shield,
-  Plus, Trash2, Search, ArrowRight, Zap, Edit2, Check, X
+  Plus, Trash2, Search, ArrowRight, Zap, Edit2, Check, X,
+  TrendingUp, TrendingDown
 } from 'lucide-react';
 import type { Transaction, MergeRule, WhitelistItem } from '../../types';
 import type { FilterOptions } from '../../lib/pipeline';
@@ -186,9 +187,9 @@ export function DataConfig({
               <label className="block text-sm font-medium text-gray-700 mb-3">收支方向</label>
               <div className="flex gap-3">
                 {[
-                  { value: '收入', label: '📈 收入', color: 'emerald' },
-                  { value: '支出', label: '📉 支出', color: 'red' },
-                ].map(({ value, label, color }) => (
+                  { value: '收入', label: '收入', icon: <TrendingUp size={16} />, color: 'emerald' },
+                  { value: '支出', label: '支出', icon: <TrendingDown size={16} />, color: 'red' },
+                ].map(({ value, label, icon, color }) => (
                   <button key={value}
                     onClick={() => {
                       const newDirs = filterOptions.directionTypes.includes(value)
@@ -196,13 +197,14 @@ export function DataConfig({
                         : [...filterOptions.directionTypes, value];
                       onFilterChange({ ...filterOptions, directionTypes: newDirs });
                     }}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
                       filterOptions.directionTypes.includes(value)
                         ? color === 'emerald'
                           ? 'bg-emerald-500 text-white border-2 border-transparent scale-[1.02]'
                           : 'bg-rose-500 text-white border-2 border-transparent scale-[1.02]'
                         : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                     }`}>
+                    {icon}
                     {label}
                   </button>
                 ))}
