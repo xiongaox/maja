@@ -382,6 +382,13 @@ export function DataConfig({
                   className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium whitespace-nowrap">
                   全部添加智能推荐
                 </button>
+                {whitelist.length > 0 && (
+                  <button onClick={() => { if(window.confirm('确定要清空所有白名单吗？')) onClearWhitelist() }}
+                    className="px-4 py-2.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors text-sm font-medium whitespace-nowrap flex items-center gap-1.5">
+                    <Trash2 size={16} />
+                    清空
+                  </button>
+                )}
               </div>
             </div>
 
