@@ -403,17 +403,19 @@ export function DataConfig({
               {filteredWhitelist.length > 0 ? (
                 filteredWhitelist.map(item => (
                   <div key={item.id} onClick={() => onToggleWhitelist(item.id)}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm cursor-pointer group transition-all shadow-sm ${
+                    className={`inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 rounded-xl text-sm cursor-pointer group transition-all ${
                       item.enabled
-                        ? 'bg-white text-gray-800 border-2 border-emerald-400 hover:border-emerald-500'
-                        : 'bg-white text-gray-400 border-2 border-transparent hover:border-gray-200 opacity-60 hover:opacity-100'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-sm hover:bg-emerald-100 hover:border-emerald-300'
+                        : 'bg-slate-50 text-slate-400 border border-slate-200 opacity-70 hover:opacity-100 hover:bg-slate-100'
                     }`}>
-                    <span className={`flex items-center justify-center w-4 h-4 rounded-full ${item.enabled ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-transparent'}`}>
-                      <Check size={10} strokeWidth={3} />
-                    </span>
-                    <span className="font-medium">{item.name}</span>
+                    <Check size={14} className={item.enabled ? 'text-emerald-500' : 'text-transparent'} strokeWidth={3} />
+                    <span className="font-medium ml-0.5">{item.name}</span>
                     <button onClick={e => { e.stopPropagation(); onRemoveWhitelist(item.id); }}
-                      className="ml-1 text-gray-300 hover:text-rose-500 transition-colors p-1 rounded-md hover:bg-rose-50">
+                      className={`ml-1 p-1 rounded-md transition-colors ${
+                        item.enabled 
+                          ? 'text-emerald-400 hover:bg-emerald-200/50 hover:text-emerald-700' 
+                          : 'text-slate-300 hover:bg-slate-200/50 hover:text-rose-500'
+                      }`}>
                       <X size={14} />
                     </button>
                   </div>
