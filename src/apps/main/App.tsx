@@ -92,9 +92,9 @@ export default function MahjongTracker() {
         .then((data) => {
           setTransactions(data.tx || []);
           if (data.cfg) {
-            updateWhitelist(data.cfg.whitelist || []);
-            updateMergeRules(data.cfg.mergeRules || []);
-            updateFilterOptions(data.cfg.filterOptions || DEFAULT_FILTER_OPTIONS);
+            setWhitelist(data.cfg.whitelist || []);
+            setMergeRules(data.cfg.mergeRules || []);
+            setFilterOptions(data.cfg.filterOptions || DEFAULT_FILTER_OPTIONS);
           }
         })
         .catch(err => {
