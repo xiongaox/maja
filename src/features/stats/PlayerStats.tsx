@@ -1,6 +1,7 @@
 import React from 'react';
 import { Award, Frown, TrendingUp, TrendingDown, Swords, Crown, Ghost, BarChart2 } from 'lucide-react';
 import type { Stats, Transaction } from '../../types';
+import { UserAvatar } from '../../components/UserAvatar';
 
 interface PlayerStatsProps {
   stats: Stats;
@@ -29,14 +30,11 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
         <div className="flex items-start justify-between mb-3 relative z-10">
           <div className="flex items-center gap-3">
-            <img
-              src={`https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(player.name)}&backgroundColor=${
-                player.gender === 'girl' ? 'fbcfe8,f9a8d4' : 
-                player.gender === 'boy' ? 'bfdbfe,93c5fd' : 
-                isWinner ? 'fef08a,fde047' : 'f1f5f9,e2e8f0'
-              }`}
-              alt={player.name}
-              className={`w-10 h-10 rounded-full flex-shrink-0 shadow-inner`}
+            <UserAvatar 
+              name={player.name} 
+              gender={player.gender} 
+              isWinner={isWinner}
+              className="w-10 h-10 rounded-full"
             />
             <div>
               <h4 className="font-bold text-gray-800 leading-tight">{player.name}</h4>
