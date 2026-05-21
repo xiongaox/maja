@@ -11,10 +11,23 @@ export const onRequestOptions = async () => {
 };
 
 export const onRequest = async (context) => {
-  const response = await context.next();
-  const newResponse = new Response(response.body, response);
-  Object.keys(corsHeaders).forEach(key => {
-    newResponse.headers.set(key, corsHeaders[key]);
-  });
-  return newResponse;
+  try {
+    const response = await context.next();
+    const newResponse = new Response(response.body, response);
+    Object.keys(corsHeaders).forEach(key => {
+      newResponse.headers.set(key, corsHeaders[key]);
+    });
+    return newResponse;
+  } catch (e) {
+    return new Response(JSON.stringify({ 
+      error: "Middleware error: " + (e instanceof Error ? e.message : String(e)),
+      stack: e instanceof Error ? e.stack : undefined
+    }), { 
+      status: 500, 
+      headers: { 
+        'Content-Type': 'application/json',
+        ...corsHeaders 
+      } 
+    });
+  }
 };
