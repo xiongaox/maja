@@ -55,7 +55,11 @@ export async function updateTransactions(id: string, pin: string, tx: Transactio
       body: JSON.stringify(tx)
     });
     if (res.status === 403) throw new Error("Invalid PIN");
-    if (!res.ok) throw new Error("API not found");
+    if (!res.ok) {
+      let msg = "API Error";
+      try { const data = await res.json(); msg = data.error || msg; } catch(e) {}
+      throw new Error(msg);
+    }
     return true;
   } catch (e: any) {
     if (e.message === "Invalid PIN") throw e;
@@ -78,7 +82,11 @@ export async function updateConfig(id: string, pin: string, cfg: any): Promise<b
       body: JSON.stringify(cfg)
     });
     if (res.status === 403) throw new Error("Invalid PIN");
-    if (!res.ok) throw new Error("API not found");
+    if (!res.ok) {
+      let msg = "API Error";
+      try { const data = await res.json(); msg = data.error || msg; } catch(e) {}
+      throw new Error(msg);
+    }
     return true;
   } catch (e: any) {
     if (e.message === "Invalid PIN") throw e;
