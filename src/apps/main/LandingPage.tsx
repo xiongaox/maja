@@ -3,12 +3,8 @@ import { ArrowRight, Lock, Dices } from 'lucide-react';
 import { updateConfig } from '../../lib/api';
 
 const generateRandomName = () => {
-  const adjectives = ['lucky', 'rich', 'happy', 'super', 'golden', 'magic'];
-  const nouns = ['mahjong', 'club', 'room', 'table', 'dragon', 'tiger'];
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 9000) + 1000;
-  return `${adj}-${noun}-${num}`;
+  // 生成 6位 随机的小写字母+数字组合
+  return Math.random().toString(36).substring(2, 8).toLowerCase();
 };
 
 export function LandingPage() {
@@ -25,9 +21,10 @@ export function LandingPage() {
     e.preventDefault();
     setError('');
 
-    const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    if (!cleanName) {
-      setError('请输入有效的房间名（仅限英文字母、数字和横杠）');
+    // 只允许小写字母和数字
+    const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!cleanName || cleanName.length < 4) {
+      setError('请输入有效的房间名（至少4位，仅限小写字母和数字）');
       return;
     }
     if (!pin || pin.length !== 6 || !/^\d+$/.test(pin)) {
@@ -78,7 +75,7 @@ export function LandingPage() {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="例如: wuhu-mahjong-club"
+                placeholder="例如: a7k9b2"
                 className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
               />
               <button
@@ -91,7 +88,7 @@ export function LandingPage() {
               </button>
             </div>
             <p className="text-xs text-slate-400 mt-2">
-              建议使用英文和横杠，方便分享。链接将是: <br/>
+              仅限小写字母和数字，方便分享。链接将是: <br/>
               <span className="text-emerald-600 font-medium break-all">https://maja.app/?id={name || '...'}</span>
             </p>
           </div>
