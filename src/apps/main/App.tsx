@@ -14,6 +14,11 @@ import { Dashboard } from '../../features/dashboard/Dashboard';
 import { PlayerStats } from '../../features/stats/PlayerStats';
 import { CalendarView } from '../../features/calendar/CalendarView';
 import { DataConfig } from '../../features/config/DataConfig';
+import { LandingPage } from './LandingPage';
+import { PasswordModal } from '../../components/PasswordModal';
+import { SystemSettingsModal } from '../../components/SystemSettingsModal';
+import { getSpaceData, updateTransactions, updateConfig, type SpaceData } from '../../lib/api';
+import { Cloud, CloudOff, CloudUpload, Share2 } from 'lucide-react';
 import { buildPipeline, DEFAULT_FILTER_OPTIONS, type FilterOptions } from '../../lib/pipeline';
 import { calculateStats, calculateDailyStats } from '../../lib/stats';
 import type { Transaction, MergeRule, WhitelistItem } from '../../types';
@@ -53,50 +58,129 @@ const SidebarItem = ({ icon: Icon, label, id, activeTab, onClick }: {
 );
 
 export default function MahjongTracker() {
-  // 状态
+  // 路由与空间状态
+  const [spaceId, setSpaceId] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'error'>('synced');
+  
+  // 密码相关
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<((pin: string) => Promise<void>) | null>(null);
+  const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
+
+  // 核心数据状态
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [whitelist, setWhitelist] = useState<WhitelistItem[]>([]);
+  const [mergeRules, setMergeRules] = useState<MergeRule[]>([]);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>(DEFAULT_FILTER_OPTIONS);
+
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // 从 localStorage 加载配置
-  const [whitelist, setWhitelist] = useState<WhitelistItem[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.WHITELIST);
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [mergeRules, setMergeRules] = useState<MergeRule[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.MERGE_RULES);
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.FILTER_OPTIONS);
-    return saved ? JSON.parse(saved) : DEFAULT_FILTER_OPTIONS;
-  });
-
-  // 保存配置到 localStorage
+  // 1. 解析 URL 并加载数据
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.WHITELIST, JSON.stringify(whitelist));
-  }, [whitelist]);
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    
+    if (id) {
+      setSpaceId(id);
+      getSpaceData(id)
+        .then((data) => {
+          setTransactions(data.tx || []);
+          if (data.cfg) {
+            updateWhitelist(data.cfg.whitelist || []);
+            updateMergeRules(data.cfg.mergeRules || []);
+            updateFilterOptions(data.cfg.filterOptions || DEFAULT_FILTER_OPTIONS);
+          }
+        })
+        .catch(err => {
+          setErrorMsg('拉取空间数据失败: ' + err.message);
+        })
+        .finally(() => {
+          setIsInitializing(false);
+        });
+    } else {
+      setIsInitializing(false);
+    }
+  }, []);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.MERGE_RULES, JSON.stringify(mergeRules));
-  }, [mergeRules]);
+  // 2. 包装有密码保护的写操作
+  const executeWithAuth = useCallback(async (action: (pin: string) => Promise<void>) => {
+    if (!spaceId) return;
+    const savedPin = sessionStorage.getItem(`maja_pin_${spaceId}`);
+    if (savedPin) {
+      try {
+        await action(savedPin);
+      } catch (err: any) {
+        if (err.message === 'Invalid PIN') {
+          sessionStorage.removeItem(`maja_pin_${spaceId}`);
+          setPendingAction(() => action);
+          setIsPasswordModalOpen(true);
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      setPendingAction(() => action);
+      setIsPasswordModalOpen(true);
+    }
+  }, [spaceId]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.FILTER_OPTIONS, JSON.stringify(filterOptions));
-  }, [filterOptions]);
+  // 3. 同步状态包装器
+  const syncTransactions = useCallback((newTx: Transaction[]) => {
+    if (!spaceId) return;
+    setTransactions(newTx);
+    setSyncStatus('syncing');
+    executeWithAuth(async (pin) => {
+      await updateTransactions(spaceId, pin, newTx);
+      setSyncStatus('synced');
+    }).catch(e => {
+      setSyncStatus('error');
+      setErrorMsg('同步交易失败: ' + e.message);
+    });
+  }, [spaceId, executeWithAuth]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-  }, [transactions]);
+  const syncConfig = useCallback((cfgData: Partial<SpaceData['cfg']>) => {
+    if (!spaceId) return;
+    setSyncStatus('syncing');
+    executeWithAuth(async (pin) => {
+      const fullCfg = { mergeRules, whitelist, filterOptions, ...cfgData };
+      await updateConfig(spaceId, pin, fullCfg);
+      setSyncStatus('synced');
+    }).catch(e => {
+      setSyncStatus('error');
+      setErrorMsg('同步配置失败: ' + e.message);
+    });
+  }, [spaceId, mergeRules, whitelist, filterOptions, executeWithAuth]);
+
+  // 修改所有 set 方法，接入 sync
+  const updateWhitelist = useCallback((updater: WhitelistItem[] | ((prev: WhitelistItem[]) => WhitelistItem[])) => {
+    setWhitelist(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      syncConfig({ whitelist: next });
+      return next;
+    });
+  }, [syncConfig]);
+
+  const updateMergeRules = useCallback((updater: MergeRule[] | ((prev: MergeRule[]) => MergeRule[])) => {
+    setMergeRules(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      syncConfig({ mergeRules: next });
+      return next;
+    });
+  }, [syncConfig]);
+
+  const updateFilterOptions = useCallback((updater: FilterOptions | ((prev: FilterOptions) => FilterOptions)) => {
+    setFilterOptions(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      syncConfig({ filterOptions: next });
+      return next;
+    });
+  }, [syncConfig]);
 
   // 使用数据管道处理交易数据
   const pipelineResult = useMemo(() => {
@@ -131,28 +215,28 @@ export default function MahjongTracker() {
 
   // 白名单操作
   const handleAddWhitelist = useCallback((name: string) => {
-    setWhitelist(prev => {
+    updateWhitelist(prev => {
       if (prev.some(item => item.name === name)) return prev;
       return [...prev, { id: `wl-${Date.now()}`, name, enabled: true }];
     });
   }, []);
 
   const handleRemoveWhitelist = useCallback((id: string) => {
-    setWhitelist(prev => prev.filter(item => item.id !== id));
+    updateWhitelist(prev => prev.filter(item => item.id !== id));
   }, []);
 
   const handleToggleWhitelist = useCallback((id: string) => {
-    setWhitelist(prev => prev.map(item =>
+    updateWhitelist(prev => prev.map(item =>
       item.id === id ? { ...item, enabled: !item.enabled } : item
     ));
   }, []);
 
   const handleClearWhitelist = useCallback(() => {
-    setWhitelist([]);
+    updateWhitelist([]);
   }, []);
 
   const handleBatchAddWhitelist = useCallback((names: string[]) => {
-    setWhitelist(prev => {
+    updateWhitelist(prev => {
       const existingNames = new Set(prev.map(item => item.name));
       const newItems = names
         .filter(name => !existingNames.has(name))
@@ -163,7 +247,7 @@ export default function MahjongTracker() {
 
   // 合并规则操作
   const handleAddMergeRule = useCallback((targetName: string, alias: string) => {
-    setMergeRules(prev => {
+    updateMergeRules(prev => {
       const existingIndex = prev.findIndex(rule => rule.targetName === targetName);
       if (existingIndex >= 0) {
         const updated = [...prev];
@@ -182,7 +266,7 @@ export default function MahjongTracker() {
 
   // 确保指定名字有合并规则条目（没有则自动创建空的）
   const handleEnsureMergeRule = useCallback((targetName: string) => {
-    setMergeRules(prev => {
+    updateMergeRules(prev => {
       const existing = prev.find(r => r.targetName === targetName);
       if (existing) return prev;
       return [...prev, { id: `rule-${Date.now()}`, targetName, aliases: [] }];
@@ -190,11 +274,11 @@ export default function MahjongTracker() {
   }, []);
 
   const handleRemoveMergeRule = useCallback((ruleId: string) => {
-    setMergeRules(prev => prev.filter(rule => rule.id !== ruleId));
+    updateMergeRules(prev => prev.filter(rule => rule.id !== ruleId));
   }, []);
 
   const handleRemoveAlias = useCallback((ruleId: string, alias: string) => {
-    setMergeRules(prev => prev.map(rule => {
+    updateMergeRules(prev => prev.map(rule => {
       if (rule.id !== ruleId) return rule;
       const newAliases = rule.aliases.filter(a => a !== alias);
       if (newAliases.length === 0) {
@@ -205,19 +289,19 @@ export default function MahjongTracker() {
   }, []);
 
   const handleUpdateTargetName = useCallback((ruleId: string, newTargetName: string) => {
-    setMergeRules(prev => prev.map(rule =>
+    updateMergeRules(prev => prev.map(rule =>
       rule.id === ruleId ? { ...rule, targetName: newTargetName } : rule
     ));
   }, []);
 
   const handleUpdateGender = useCallback((ruleId: string, gender: 'boy' | 'girl' | undefined) => {
-    setMergeRules(prev => prev.map(rule =>
+    updateMergeRules(prev => prev.map(rule =>
       rule.id === ruleId ? { ...rule, gender } : rule
     ));
   }, []);
 
   const handleClearMergeRules = useCallback(() => {
-    setMergeRules([]);
+    updateMergeRules([]);
   }, []);
 
   // 文件上传
@@ -336,17 +420,15 @@ export default function MahjongTracker() {
 
       if (newTransactions.length > 0) {
         // 去重：基于 日期+名称+金额 三元组
-        setTransactions(prev => {
-          const existingKeys = new Set(prev.map(t => txKey(t)));
-          const unique = newTransactions.filter(t => !existingKeys.has(txKey(t)));
-          const skipped = newTransactions.length - unique.length;
-          if (skipped > 0) {
-            setSuccessMsg(`成功导入 ${unique.length} 条记录，跳过 ${skipped} 条重复记录`);
-          } else {
-            setSuccessMsg(`成功导入 ${unique.length} 条记录！`);
-          }
-          return [...prev, ...unique];
-        });
+        const existingKeys = new Set(transactions.map(t => txKey(t)));
+        const unique = newTransactions.filter(t => !existingKeys.has(txKey(t)));
+        const skipped = newTransactions.length - unique.length;
+        if (skipped > 0) {
+          setSuccessMsg(`成功导入 ${unique.length} 条记录，跳过 ${skipped} 条重复记录`);
+        } else {
+          setSuccessMsg(`成功导入 ${unique.length} 条记录！`);
+        }
+        syncTransactions([...transactions, ...unique]);
       } else {
         setErrorMsg('未能识别到有效的账单记录，请确保上传的是微信或支付宝导出的账单表格。');
       }
@@ -357,7 +439,7 @@ export default function MahjongTracker() {
       // 清除文件输入
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, []);
+  }, [transactions, syncTransactions]);
 
   // 导出配置
   const handleExportConfig = useCallback(() => {
@@ -396,11 +478,12 @@ export default function MahjongTracker() {
         return;
       }
 
-      setWhitelist(config.whitelist);
-      setMergeRules(config.mergeRules);
       if (config.filterOptions) {
         setFilterOptions(config.filterOptions);
       }
+      
+      const newFilterOptions = config.filterOptions || DEFAULT_FILTER_OPTIONS;
+      syncConfig({ whitelist: config.whitelist, mergeRules: config.mergeRules, filterOptions: newFilterOptions });
 
       setSuccessMsg('配置已导入！');
     } catch (err: any) {
@@ -416,6 +499,7 @@ export default function MahjongTracker() {
       setWhitelist([]);
       setMergeRules([]);
       setFilterOptions(DEFAULT_FILTER_OPTIONS);
+      syncConfig({ whitelist: [], mergeRules: [], filterOptions: DEFAULT_FILTER_OPTIONS });
       setSuccessMsg('配置已清空');
     }
   }, []);
@@ -465,7 +549,10 @@ export default function MahjongTracker() {
         if (backup.filterOptions) {
           setFilterOptions(backup.filterOptions);
         }
-        setTransactions(backup.transactions);
+        
+        const newFilterOptions = backup.filterOptions || DEFAULT_FILTER_OPTIONS;
+        syncConfig({ whitelist: backup.whitelist || [], mergeRules: backup.mergeRules || [], filterOptions: newFilterOptions });
+        syncTransactions(backup.transactions);
         setSuccessMsg('完整备份恢复成功！');
       }
     } catch (err: any) {
@@ -534,73 +621,26 @@ export default function MahjongTracker() {
           <SidebarItem icon={SettingsIcon} label="数据配置" id="config" activeTab={activeTab} onClick={handleTabClick} />
         </nav>
 
-        <div className="p-4 border-t border-gray-100 space-y-2">
-          {/* 导出配置按钮 */}
-          <div className="flex gap-2">
-            <button 
-              onClick={handleExportConfig}
-              className="flex-1 py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
-            >
-              <Download size={16} />
-              导出配置
-            </button>
-            <button 
-              onClick={handleClearConfig}
-              className="px-4 py-2.5 text-sm bg-rose-50 text-rose-600 font-medium rounded-xl hover:bg-rose-100 transition-colors flex items-center justify-center"
-              title="清空配置"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-          
-          {/* 导入配置按钮 */}
-          <label className="w-full py-2.5 text-sm bg-gray-50 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 cursor-pointer mb-2">
-            <Upload size={16} />
-            导入配置
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImportConfig}
-              className="hidden"
-            />
-          </label>
-
-          {/* 导出完整备份 */}
+        <div className="p-4 border-t border-gray-100 space-y-3">
+          {/* 系统同步与设置 */}
           <button 
-            onClick={handleExportFull}
-            className="w-full py-2.5 text-sm bg-emerald-50 text-emerald-600 font-medium rounded-xl hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
+            onClick={() => setIsSystemModalOpen(true)}
+            className="w-full py-2.5 text-sm bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
           >
-            <Download size={16} />
-            导出完整备份
+            {syncStatus === 'syncing' ? <CloudUpload size={16} className="animate-bounce text-emerald-500" /> :
+             syncStatus === 'synced' ? <Cloud size={16} className="text-emerald-500" /> : 
+             <CloudOff size={16} className="text-rose-500" />}
+            空间同步与备份
           </button>
           
-          {/* 导入完整备份 */}
-          <label className="w-full py-2.5 text-sm bg-blue-50 text-blue-600 font-medium rounded-xl hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 cursor-pointer">
-            <Upload size={16} />
-            恢复完整备份
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImportFull}
-              className="hidden"
-            />
-          </label>
-
-          {/* 清空数据按钮 */}
-          {transactions.length > 0 && (
-            <button
-              onClick={() => {
-                if (confirm(`确定要清空所有 ${transactions.length} 条交易数据吗？此操作不可撤销。`)) {
-                  setTransactions([]);
-                  setSuccessMsg('所有交易数据已清空');
-                }
-              }}
-              className="w-full py-2.5 text-sm bg-rose-50 text-rose-600 font-medium rounded-xl hover:bg-rose-100 transition-colors flex items-center justify-center gap-2"
-            >
-              <Trash2 size={16} />
-              清空数据 ({transactions.length})
-            </button>
-          )}
+          {/* 创建专属记账本 */}
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="w-full py-2.5 text-sm bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20"
+          >
+            <Share2 size={16} />
+            创建专属记账本
+          </button>
         </div>
       </aside>
 
@@ -645,7 +685,7 @@ export default function MahjongTracker() {
             <CalendarView
               dailyStats={dailyStats}
               onRemoveTransaction={(id) => {
-                setTransactions(prev => prev.filter(t => t.id !== id));
+                syncTransactions(transactions.filter(t => t.id !== id));
               }}
             />
           )}
@@ -676,6 +716,40 @@ export default function MahjongTracker() {
           )}
         </div>
       </main>
+    
+      <PasswordModal 
+        isOpen={isPasswordModalOpen}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          setPendingAction(null);
+        }}
+        onSubmit={async (pin) => {
+          if (pendingAction) {
+            await pendingAction(pin);
+            sessionStorage.setItem(`maja_pin_${spaceId}`, pin);
+          }
+          setIsPasswordModalOpen(false);
+          setPendingAction(null);
+        }}
+      />
+
+      <SystemSettingsModal
+        isOpen={isSystemModalOpen}
+        onClose={() => setIsSystemModalOpen(false)}
+        spaceId={spaceId || ''}
+        transactionsLength={transactions.length}
+        onExportConfig={handleExportConfig}
+        onImportConfig={handleImportConfig}
+        onExportFull={handleExportFull}
+        onImportFull={handleImportFull}
+        onClearConfig={handleClearConfig}
+        onClearData={() => {
+          if (confirm(`确定要清空所有 ${transactions.length} 条交易数据吗？此操作不可撤销。`)) {
+            syncTransactions([]);
+            setSuccessMsg('所有交易数据已清空');
+          }
+        }}
+      />
     </div>
   );
 }
