@@ -89,25 +89,31 @@ export function applyFilterOptions(
   transactions: Transaction[],
   filterOptions: FilterOptions
 ): Transaction[] {
+  // 防御性默认值：云端可能返回不完整的 filterOptions
+  const types = filterOptions.transactionTypes || [];
+  const directions = filterOptions.directionTypes || [];
+  const minAmt = filterOptions.minAmount ?? 0;
+  const maxAmt = filterOptions.maxAmount ?? Infinity;
+
   return transactions.filter(t => {
     const absAmount = Math.abs(t.amount);
     
     // 交易类型筛选
-    if (filterOptions.transactionTypes.length > 0 && t.type) {
-      const typeMatch = filterOptions.transactionTypes.some(filterType => 
+    if (types.length > 0 && t.type) {
+      const typeMatch = types.some(filterType => 
         t.type!.includes(filterType) || filterType.includes(t.type!)
       );
       if (!typeMatch) return false;
     }
 
     // 收支方向筛选
-    if (filterOptions.directionTypes.length > 0) {
+    if (directions.length > 0) {
       const direction = t.amount > 0 ? '收入' : '支出';
-      if (!filterOptions.directionTypes.includes(direction)) return false;
+      if (!directions.includes(direction)) return false;
     }
 
     // 金额区间筛选
-    if (absAmount < filterOptions.minAmount || absAmount > filterOptions.maxAmount) {
+    if (absAmount < minAmt || absAmount > maxAmt) {
       return false;
     }
 
