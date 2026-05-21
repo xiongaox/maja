@@ -757,6 +757,11 @@ export default function MahjongTracker() {
             setSuccessMsg('所有交易数据已清空');
           }
         }}
+        onForceSync={() => {
+          syncConfig({ whitelist, mergeRules, filterOptions });
+          syncTransactions(transactions);
+          setSuccessMsg('配置与数据已成功同步至云端！');
+        }}
       />
     </div>
   );

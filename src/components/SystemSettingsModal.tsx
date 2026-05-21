@@ -12,11 +12,12 @@ interface SystemSettingsModalProps {
   onImportFull: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearConfig: () => void;
   onClearData: () => void;
+  onForceSync: () => void;
 }
 
 export function SystemSettingsModal({
   isOpen, onClose, spaceId, transactionsLength,
-  onExportConfig, onImportConfig, onExportFull, onImportFull, onClearConfig, onClearData
+  onExportConfig, onImportConfig, onExportFull, onImportFull, onClearConfig, onClearData, onForceSync
 }: SystemSettingsModalProps) {
   const [copied, setCopied] = React.useState(false);
 
@@ -67,10 +68,24 @@ export function SystemSettingsModal({
 
           <div className="h-px bg-slate-100 w-full" />
 
-          {/* 手动备份区 */}
+          {/* 手动云端同步 */}
+          <div>
+            <h4 className="text-sm font-bold text-slate-700 mb-3">强制云端同步</h4>
+            <p className="text-xs text-slate-500 mb-4">如果您担心网络问题导致配置未保存，可点击下方按钮强制将当前所有数据上传至云端。</p>
+            <button 
+              onClick={() => { onForceSync(); onClose(); }} 
+              className="w-full py-2.5 text-sm bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-sm transition-colors"
+            >
+              <Cloud size={16} /> 确认上传全部数据与配置
+            </button>
+          </div>
+
+          <div className="h-px bg-slate-100 w-full" />
+
+          {/* 本地手动备份 (可选) */}
           <div>
             <h4 className="text-sm font-bold text-slate-700 mb-3">本地手动备份 (可选)</h4>
-            <p className="text-xs text-slate-500 mb-4">您的数据已实时同步至云端，通常无需手动备份。若需转移或保存快照，可使用以下功能。</p>
+            <p className="text-xs text-slate-500 mb-4">若需转移或保存快照，可使用以下功能。</p>
             
             <div className="grid grid-cols-2 gap-3 mb-3">
               <button onClick={onExportConfig} className="py-2.5 text-sm bg-slate-50 text-slate-600 font-medium rounded-xl hover:bg-slate-100 flex items-center justify-center gap-2 border border-slate-100">
