@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2 } from 'lucide-react';
 import type { Transaction } from '../../types';
 
 interface CalendarViewProps {
@@ -179,12 +179,15 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
               {dailyStats[selectedDay].records.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm
-                      ${tx.gender === 'girl' ? 'bg-pink-100 text-pink-500' : 
-                        tx.gender === 'boy' ? 'bg-blue-100 text-blue-500' : 
-                        tx.amount > 0 ? 'bg-emerald-100 text-emerald-500' : 'bg-rose-100 text-rose-500'}`}>
-                      <User size={20} strokeWidth={2.5} />
-                    </div>
+                    <img
+                      src={`https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(tx.displayName || tx.name)}&backgroundColor=${
+                        tx.gender === 'girl' ? 'fbcfe8,f9a8d4' : 
+                        tx.gender === 'boy' ? 'bfdbfe,93c5fd' : 
+                        tx.amount > 0 ? 'd1fae5,a7f3d0' : 'ffe4e6,fecdd3'
+                      }`}
+                      alt={tx.displayName || tx.name}
+                      className="w-10 h-10 rounded-full flex-shrink-0 shadow-sm"
+                    />
                     <div>
                       <p className="font-bold text-gray-800">{tx.displayName || tx.name}</p>
                       <p className="text-xs text-gray-400">{tx.date.split(' ')[1]}</p>
