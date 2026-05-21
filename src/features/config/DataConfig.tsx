@@ -163,22 +163,26 @@ export function DataConfig({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">交易类型</label>
               <div className="flex flex-wrap gap-2">
-                {['扫二维码付款', '二维码付款', '商户消费', '二维码收款', '转账', '红包', '群收款'].map(type => (
-                  <button key={type}
-                    onClick={() => {
-                      const newTypes = filterOptions.transactionTypes.includes(type)
-                        ? filterOptions.transactionTypes.filter(t => t !== type)
-                        : [...filterOptions.transactionTypes, type];
-                      onFilterChange({ ...filterOptions, transactionTypes: newTypes });
-                    }}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
-                      filterOptions.transactionTypes.includes(type)
-                        ? 'bg-slate-800 text-white border-2 border-transparent scale-[1.02]'
-                        : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                    }`}>
-                    {type}
-                  </button>
-                ))}
+                {['扫二维码付款', '二维码付款', '商户消费', '二维码收款', '转账', '红包', '群收款'].map(type => {
+                  const types = filterOptions.transactionTypes || [];
+                  const isSelected = types.includes(type);
+                  return (
+                    <button key={type}
+                      onClick={() => {
+                        const newTypes = isSelected
+                          ? types.filter(t => t !== type)
+                          : [...types, type];
+                        onFilterChange({ ...filterOptions, transactionTypes: newTypes });
+                      }}
+                      className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
+                        isSelected
+                          ? 'bg-slate-800 text-white border-2 border-transparent scale-[1.02]'
+                          : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                      }`}>
+                      {type}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -190,25 +194,29 @@ export function DataConfig({
                 {[
                   { value: '收入', label: '收入', icon: <TrendingUp size={16} />, color: 'emerald' },
                   { value: '支出', label: '支出', icon: <TrendingDown size={16} />, color: 'red' },
-                ].map(({ value, label, icon, color }) => (
-                  <button key={value}
-                    onClick={() => {
-                      const newDirs = filterOptions.directionTypes.includes(value)
-                        ? filterOptions.directionTypes.filter(d => d !== value)
-                        : [...filterOptions.directionTypes, value];
-                      onFilterChange({ ...filterOptions, directionTypes: newDirs });
-                    }}
-                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
-                      filterOptions.directionTypes.includes(value)
-                        ? color === 'emerald'
-                          ? 'bg-emerald-500 text-white border-2 border-transparent scale-[1.02]'
-                          : 'bg-rose-500 text-white border-2 border-transparent scale-[1.02]'
-                        : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                    }`}>
-                    {icon}
-                    {label}
-                  </button>
-                ))}
+                ].map(({ value, label, icon, color }) => {
+                  const dirs = filterOptions.directionTypes || [];
+                  const isSelected = dirs.includes(value);
+                  return (
+                    <button key={value}
+                      onClick={() => {
+                        const newDirs = isSelected
+                          ? dirs.filter(d => d !== value)
+                          : [...dirs, value];
+                        onFilterChange({ ...filterOptions, directionTypes: newDirs });
+                      }}
+                      className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm ${
+                        isSelected
+                          ? color === 'emerald'
+                            ? 'bg-emerald-500 text-white border-2 border-transparent scale-[1.02]'
+                            : 'bg-rose-500 text-white border-2 border-transparent scale-[1.02]'
+                          : 'bg-white text-slate-600 border-2 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                      }`}>
+                      {icon}
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -219,7 +227,7 @@ export function DataConfig({
               <div className="flex items-center gap-4">
                 <div className="flex items-center bg-white border-2 border-slate-100 rounded-xl overflow-hidden focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all shadow-sm">
                   <div className="px-3 py-2.5 bg-slate-50 text-slate-500 font-medium border-r border-slate-100">¥</div>
-                  <input type="number" value={filterOptions.minAmount}
+                  <input type="number" value={filterOptions.minAmount ?? 0}
                     onChange={e => onFilterChange({ ...filterOptions, minAmount: Number(e.target.value) })}
                     className="w-24 px-3 py-2.5 outline-none font-medium text-slate-700"
                     min="0" step="0.01" />
@@ -227,7 +235,7 @@ export function DataConfig({
                 <span className="text-slate-400 font-medium">至</span>
                 <div className="flex items-center bg-white border-2 border-slate-100 rounded-xl overflow-hidden focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all shadow-sm">
                   <div className="px-3 py-2.5 bg-slate-50 text-slate-500 font-medium border-r border-slate-100">¥</div>
-                  <input type="number" value={filterOptions.maxAmount}
+                  <input type="number" value={filterOptions.maxAmount ?? Infinity}
                     onChange={e => onFilterChange({ ...filterOptions, maxAmount: Number(e.target.value) })}
                     className="w-24 px-3 py-2.5 outline-none font-medium text-slate-700"
                     min="0" step="0.01" />
