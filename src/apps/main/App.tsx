@@ -578,6 +578,14 @@ export default function MahjongTracker() {
     setIsMobileMenuOpen(false);
   };
 
+  if (isInitializing) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-emerald-500" size={48} /></div>;
+  }
+  
+  if (!spaceId) {
+    return <LandingPage />;
+  }
+
   return (
     <div className="h-screen w-full bg-slate-50 font-sans flex flex-col md:flex-row text-gray-800 overflow-hidden">
       {/* 全局加载遮罩 */}
