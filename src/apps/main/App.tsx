@@ -360,6 +360,9 @@ export default function MahjongTracker() {
             if (!row || row.length === 0) continue;
 
             let nameVal = String(row[nameIdx] || '').replace(/[\t]/g, '').trim();
+            // 兼容微信账单中的特殊表情符号（私有区域字符 PUA），避免在界面上显示为空白方块
+            nameVal = nameVal.replace(/[\uE000-\uF8FF]/g, '[表情]');
+            
             let amountVal = String(row[amountIdx] || '').replace(/[^\d.-]/g, '');
             let directionVal = directionIdx >= 0 ? String(row[directionIdx] || '').replace(/[\t]/g, '').trim() : '';
             let typeVal = typeIdx >= 0 ? String(row[typeIdx] || '').replace(/[\t]/g, '').trim() : '';
