@@ -97,7 +97,15 @@ export function DataConfig({
     : whitelist;
 
   const handleAddWhitelist = () => {
-    if (newName.trim()) { onAddWhitelist(newName.trim()); setNewName(''); }
+    const nameToAdd = newName.trim();
+    if (nameToAdd) {
+      if (!suggestedNames.includes(nameToAdd)) {
+        alert('只能添加下方“账单中发现的常用收付款方推荐”中存在的名称');
+        return;
+      }
+      onAddWhitelist(nameToAdd);
+      setNewName('');
+    }
   };
 
   // 确认创建新备注组
@@ -448,10 +456,6 @@ export function DataConfig({
                 <button onClick={handleAddWhitelist} disabled={!newName.trim()}
                   className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors flex items-center justify-center font-medium">
                   添加
-                </button>
-                <button onClick={() => onBatchAddWhitelist(suggestedNames)}
-                  className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium whitespace-nowrap">
-                  全部添加智能推荐
                 </button>
                 {whitelist.length > 0 && (
                   <button onClick={() => { if (window.confirm('确定要清空所有白名单吗？')) onClearWhitelist(); }}
