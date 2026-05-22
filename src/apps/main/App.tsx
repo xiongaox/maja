@@ -314,8 +314,9 @@ export default function MahjongTracker() {
     setSuccessMsg('');
 
     try {
-
-      const newTransactions: Transaction[] = [];
+      let currentTransactions = [...transactions];
+      let totalImported = 0;
+      let totalSkipped = 0;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -350,6 +351,8 @@ export default function MahjongTracker() {
             break;
           }
         }
+
+        const fileTransactions: Transaction[] = [];
 
         if (headerRowIdx !== -1 && nameIdx !== -1 && amountIdx !== -1) {
           for (let r = headerRowIdx + 1; r < jsonData.length; r++) {
@@ -406,7 +409,7 @@ export default function MahjongTracker() {
 
             if (!formattedDate) continue;
 
-            newTransactions.push({
+            fileTransactions.push({
               id: `excel-${Math.random().toString(36).substr(2, 9)}`,
               date: formattedDate,
               name: nameVal,
@@ -416,27 +419,46 @@ export default function MahjongTracker() {
             });
           }
         }
+
+        if (fileTransactions.length > 0) {
+          // 使用 multiset (计数) 逻辑进行精确去重
+          // 这样既能防止同一文件内合法重复的记录被吞，也能完美过滤跨文件/多次导入的重叠重复记录
+          const existingCounts = new Map<string, number>();
+          for (const t of currentTransactions) {
+            const key = txKey(t);
+            existingCounts.set(key, (existingCounts.get(key) || 0) + 1);
+          }
+
+          const uniqueForFile: Transaction[] = [];
+          for (const t of fileTransactions) {
+            const key = txKey(t);
+            const count = existingCounts.get(key) || 0;
+            if (count > 0) {
+              existingCounts.set(key, count - 1);
+              totalSkipped++;
+            } else {
+              uniqueForFile.push(t);
+            }
+          }
+          currentTransactions = [...currentTransactions, ...uniqueForFile];
+          totalImported += uniqueForFile.length;
+        }
       }
 
-      if (newTransactions.length > 0) {
-        // 去重：基于 日期+名称+金额 三元组
-        const existingKeys = new Set(transactions.map(t => txKey(t)));
-        const unique = newTransactions.filter(t => !existingKeys.has(txKey(t)));
-        const skipped = newTransactions.length - unique.length;
-        if (skipped > 0) {
-          setSuccessMsg(`成功导入 ${unique.length} 条记录，跳过 ${skipped} 条重复记录`);
+      if (totalImported > 0 || totalSkipped > 0) {
+        if (totalSkipped > 0) {
+          setSuccessMsg(`成功导入 ${totalImported} 条记录，跳过 ${totalSkipped} 条重复记录`);
         } else {
-          setSuccessMsg(`成功导入 ${unique.length} 条记录！`);
+          setSuccessMsg(`成功导入 ${totalImported} 条记录！`);
         }
-        syncTransactions([...transactions, ...unique]);
-      } else {
-        setErrorMsg('未能识别到有效的账单记录，请确保上传的是微信或支付宝导出的账单表格。');
+        syncTransactions(currentTransactions);
+      } else if (files.length > 0) {
+        setErrorMsg('未能识别到新的有效账单记录，或所有记录均已存在。');
       }
     } catch (err: any) {
       setErrorMsg('解析文件失败：' + err.message);
     } finally {
       setIsUploading(false);
-      // 清除文件输入
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [transactions, syncTransactions]);
