@@ -481,6 +481,8 @@ export default function MahjongTracker() {
       if (config.filterOptions) {
         setFilterOptions(config.filterOptions);
       }
+      setWhitelist(config.whitelist);
+      setMergeRules(config.mergeRules);
       
       const newFilterOptions = config.filterOptions || DEFAULT_FILTER_OPTIONS;
       syncConfig({ whitelist: config.whitelist, mergeRules: config.mergeRules, filterOptions: newFilterOptions });
