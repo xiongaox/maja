@@ -87,29 +87,26 @@ export function calculateStats(transactions: Transaction[]): Stats {
   const sortedDays = Object.keys(sessionsByDay).sort((a, b) => a.localeCompare(b));
   sortedDays.forEach(day => {
     const session = sessionsByDay[day];
-    // 至少账单需要出现两个才算一局
-    if (session.count >= 2) {
-      if (session.net > 0) {
-        currentWinStreak.count += 1;
-        currentWinStreak.amount += session.net;
-        currentLossStreak = { count: 0, amount: 0 }; // 重置连跪
-        if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
-          maxWinStreak = { ...currentWinStreak };
-        }
-      } else if (session.net < 0) {
-        currentLossStreak.count += 1;
-        currentLossStreak.amount += Math.abs(session.net);
-        currentWinStreak = { count: 0, amount: 0 }; // 重置连胜
-        if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
-          maxLossStreak = { ...currentLossStreak };
-        }
-      } else {
-        // 净胜负为0，平局，打断连胜连败
-        currentWinStreak = { count: 0, amount: 0 };
-        currentLossStreak = { count: 0, amount: 0 };
+    // 只要有账单，这一天就记为一局（无论几笔转账，都汇总计算这一局的总盈亏）
+    if (session.net > 0) {
+      currentWinStreak.count += 1;
+      currentWinStreak.amount += session.net;
+      currentLossStreak = { count: 0, amount: 0 }; // 重置连跪
+      if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
+        maxWinStreak = { ...currentWinStreak };
       }
+    } else if (session.net < 0) {
+      currentLossStreak.count += 1;
+      currentLossStreak.amount += Math.abs(session.net);
+      currentWinStreak = { count: 0, amount: 0 }; // 重置连胜
+      if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
+        maxLossStreak = { ...currentLossStreak };
+      }
+    } else {
+      // 净胜负为0，平局，打断连胜连败
+      currentWinStreak = { count: 0, amount: 0 };
+      currentLossStreak = { count: 0, amount: 0 };
     }
-    // 注意：如果 count < 2，不认为是一局，直接跳过，它不影响当前的连胜连败状态。
   });
 
   // 单笔最痛保持不变（查找金额最小的单笔支出）
