@@ -39,13 +39,13 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             <div>
               <h4 className="font-bold text-gray-800 leading-tight">{player.name}</h4>
               <p className="text-xs text-gray-400 font-medium mt-0.5">
-                流水: {(player.win + player.loss).toFixed(0)}
+                流水: {Math.round(player.win + player.loss)}
               </p>
             </div>
           </div>
           <div className="text-right">
             <span className={`text-xl font-black block leading-none ${isWinner ? 'text-amber-500' : 'text-gray-600'}`}>
-              {isWinner ? '+' : ''}{player.net.toFixed(2)}
+              {isWinner ? '+' : ''}{Math.round(player.net)}
             </span>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
         <div className="h-10 w-px bg-gray-100 hidden md:block" />
         <div>
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总流水</p>
-          <p className="text-xl font-black text-gray-800">{(stats.totalWin + stats.totalLoss).toFixed(2)}</p>
+          <p className="text-xl font-black text-gray-800">{Math.round(stats.totalWin + stats.totalLoss)}</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             {stats.atm ? (
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-black drop-shadow-md">{stats.atm}</span>
-                <span className="text-amber-100 font-bold bg-black/10 px-2 py-0.5 rounded-lg text-sm border border-white/10">+{stats.maxWinFromPlayer.toFixed(2)}</span>
+                <span className="text-amber-100 font-bold bg-black/10 px-2 py-0.5 rounded-lg text-sm border border-white/10">+{Math.round(stats.maxWinFromPlayer)}</span>
               </div>
             ) : <span className="text-amber-100/70">虚位以待</span>}
           </div>
@@ -128,7 +128,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             {stats.nemesis ? (
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-black text-rose-100 drop-shadow-md">{stats.nemesis}</span>
-                <span className="text-rose-200 font-bold bg-rose-900/40 px-2 py-0.5 rounded-lg text-sm border border-rose-500/30">{stats.maxLossToPlayer.toFixed(2)}</span>
+                <span className="text-rose-200 font-bold bg-rose-900/40 px-2 py-0.5 rounded-lg text-sm border border-rose-500/30">{Math.round(stats.maxLossToPlayer)}</span>
               </div>
             ) : <span className="text-gray-400/70">虚位以待</span>}
           </div>
