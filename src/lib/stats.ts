@@ -75,13 +75,13 @@ export function calculateStats(transactions: Transaction[]): Stats {
     if (currentRoundTxs.length === 0) {
       currentRoundTxs.push(t);
     } else {
-      const lastT = currentRoundTxs[currentRoundTxs.length - 1];
+      const firstT = currentRoundTxs[0];
       // 兼容 iOS 设备的日期解析
       const tTime = new Date(t.date.replace(/-/g, '/')).getTime();
-      const lastTime = new Date(lastT.date.replace(/-/g, '/')).getTime();
+      const firstTime = new Date(firstT.date.replace(/-/g, '/')).getTime();
 
-      // 如果当前账单与上一笔账单时间相差超过 2 分钟 (120,000 毫秒)，则视为新的一局
-      if (tTime - lastTime > 2 * 60 * 1000) {
+      // 如果当前账单与该局第一笔账单时间相差超过 2 分钟 (120,000 毫秒)，则视为新的一局
+      if (tTime - firstTime > 2 * 60 * 1000) {
         rounds.push({
           txs: currentRoundTxs,
           net: currentRoundTxs.reduce((sum, tx) => sum + tx.amount, 0)
