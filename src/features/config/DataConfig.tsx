@@ -74,6 +74,9 @@ export function DataConfig({
   onFilterChange, suggestedNames, originalNames, onEnsureMergeRule,
 }: DataConfigProps) {
   const [activeTab, setActiveTab] = useState<'filter' | 'merge' | 'whitelist'>('filter');
+  
+  // Mobile merge selector state
+  const [selectedItemForMerge, setSelectedItemForMerge] = useState<string | null>(null);
 
   // 白名单 tab 状态
   const [newName, setNewName] = useState('');
@@ -148,7 +151,7 @@ export function DataConfig({
             >
               <Icon size={18} className={isActive ? 'text-emerald-500 drop-shadow-sm' : 'opacity-70'} />
               <div className="flex items-center gap-1">
-                <span className="text-[10px] md:text-sm font-medium whitespace-nowrap">{tab.label}</span>
+                <span className="text-xs sm:text-[13px] md:text-sm font-medium whitespace-nowrap">{tab.label}</span>
                 {tab.count !== undefined && (
                   <span className={`hidden md:inline-block text-xs px-2 py-0.5 rounded-full font-bold ${
                     isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200/70 text-slate-500'
@@ -377,7 +380,7 @@ export function DataConfig({
 
                     {/* 收付款方名 —— 小 chip 行 */}
                     {!isEditing && (
-                      <div className="flex flex-wrap gap-1.5 items-center px-4 pb-4">
+                      <div className="flex flex-wrap gap-1.5 items-center px-4 pt-3 pb-4">
                         {rule.aliases.map(alias => (
                           <span key={alias}
                             className="inline-flex items-center gap-1 bg-slate-50 text-slate-500 text-xs px-2.5 py-1 rounded-lg border border-slate-200">
@@ -429,6 +432,7 @@ export function DataConfig({
                       <div key={item.id}>
                         <button
                           draggable
+                          onClick={() => setSelectedItemForMerge(item.name)}
                           onDragStart={() => setDraggedItemName(item.name)}
                           onDragEnd={() => setDraggedItemName(null)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-xl bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-md transition-all cursor-grab active:cursor-grabbing">
@@ -527,6 +531,57 @@ export function DataConfig({
           </div>
         )}
       </div>
+
+      {/* Mobile merge selector modal */}
+      {selectedItemForMerge && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in" onClick={() => setSelectedItemForMerge(null)}>
+          <div className="bg-white w-full sm:w-[400px] rounded-t-2xl sm:rounded-2xl shadow-xl flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-slate-50 rounded-t-2xl sm:rounded-t-2xl">
+              <div>
+                <h3 className="font-bold text-gray-900">分配到备注组</h3>
+                <p className="text-xs text-gray-500 mt-0.5">将「{selectedItemForMerge}」加入：</p>
+              </div>
+              <button onClick={() => setSelectedItemForMerge(null)} className="p-2 text-gray-400 hover:bg-gray-200 rounded-full transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-2">
+              {mergeRules.length > 0 ? (
+                <div className="space-y-1">
+                  {mergeRules.map(rule => (
+                    <button
+                      key={rule.id}
+                      onClick={() => {
+                        onAddMergeRule(rule.targetName, selectedItemForMerge);
+                        setSelectedItemForMerge(null);
+                      }}
+                      className="w-full text-left px-4 py-3 rounded-xl hover:bg-emerald-50 flex items-center justify-between group transition-colors"
+                    >
+                      <span className="font-medium text-gray-900 group-hover:text-emerald-700">{rule.targetName}</span>
+                      <Plus size={16} className="text-gray-300 group-hover:text-emerald-500" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-gray-400 text-sm">暂无备注组，请先在上方创建一个</div>
+              )}
+            </div>
+            <div className="p-4 border-t border-gray-100">
+              <button 
+                onClick={() => {
+                  setNewGroupName(selectedItemForMerge);
+                  setIsCreatingGroup(true);
+                  setSelectedItemForMerge(null);
+                }}
+                className="w-full py-3 bg-emerald-50 text-emerald-600 font-bold rounded-xl flex justify-center items-center gap-2 hover:bg-emerald-100 transition-colors"
+              >
+                <Plus size={16} />
+                创建名为「{selectedItemForMerge}」的新组
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
