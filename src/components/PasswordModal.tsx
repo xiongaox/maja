@@ -58,7 +58,7 @@ export function PasswordModal({ isOpen, onClose, onSubmit }: PasswordModalProps)
             value={pin}
             onChange={e => setPin(e.target.value)}
             placeholder="输入 6 位密码"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-shadow tracking-[0.5em] font-mono text-center text-xl mb-2"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-shadow text-center text-xl mb-2"
           />
           
           {error && (
