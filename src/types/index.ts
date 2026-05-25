@@ -27,6 +27,12 @@ export interface PlayerStat {
   gender?: 'boy' | 'girl';
 }
 
+export interface FunFacts {
+  maxWinStreak: { count: number; amount: number };
+  maxLossStreak: { count: number; amount: number };
+  maxSingleLoss: { amount: number; date: string; name: string } | null;
+}
+
 export interface Stats {
   totalWin: number;
   totalLoss: number;
@@ -40,6 +46,7 @@ export interface Stats {
   latestDayLabel: string;
   latestDayDisplayDate: string;
   isActuallyToday: boolean;
+  funFacts: FunFacts;
 }
 
 export interface WhitelistItem {

@@ -64,6 +64,38 @@ export function calculateStats(transactions: Transaction[]): Stats {
     }
   });
 
+  // --- 趣味数据计算 (Fun Facts) ---
+  const sortedTx = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
+
+  let maxWinStreak = { count: 0, amount: 0 };
+  let maxLossStreak = { count: 0, amount: 0 };
+  let maxSingleLoss: { amount: number; date: string; name: string } | null = null;
+
+  let currentWinStreak = { count: 0, amount: 0 };
+  let currentLossStreak = { count: 0, amount: 0 };
+
+  sortedTx.forEach(t => {
+    if (t.amount > 0) {
+      currentWinStreak.count += 1;
+      currentWinStreak.amount += t.amount;
+      currentLossStreak = { count: 0, amount: 0 }; // 重置连跪
+      if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
+        maxWinStreak = { ...currentWinStreak };
+      }
+    } else if (t.amount < 0) {
+      currentLossStreak.count += 1;
+      currentLossStreak.amount += Math.abs(t.amount);
+      currentWinStreak = { count: 0, amount: 0 }; // 重置连胜
+      if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
+        maxLossStreak = { ...currentLossStreak };
+      }
+
+      if (!maxSingleLoss || t.amount < maxSingleLoss.amount) {
+        maxSingleLoss = { amount: t.amount, date: t.date, name: t.displayName || t.name };
+      }
+    }
+  });
+
   return {
     totalWin,
     totalLoss,
@@ -77,6 +109,7 @@ export function calculateStats(transactions: Transaction[]): Stats {
     latestDayLabel,
     latestDayDisplayDate,
     isActuallyToday,
+    funFacts: { maxWinStreak, maxLossStreak, maxSingleLoss },
   };
 }
 
