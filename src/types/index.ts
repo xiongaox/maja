@@ -28,8 +28,8 @@ export interface PlayerStat {
 }
 
 export interface FunFacts {
-  maxWinStreak: { count: number; amount: number };
-  maxLossStreak: { count: number; amount: number };
+  maxWinStreak: { count: number; amount: number; startDate: string; endDate: string };
+  maxLossStreak: { count: number; amount: number; startDate: string; endDate: string };
   maxSingleLoss: { amount: number; date: string; name: string } | null;
 }
 

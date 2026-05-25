@@ -150,6 +150,13 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Flame size={16} className="text-orange-500" /> 最长连赢记录
             </div>
             <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxWinStreak.count} <span className="text-base font-normal text-gray-400">连胜</span></div>
+            {stats.funFacts.maxWinStreak.count > 0 && (
+              <div className="text-[11px] text-gray-400 mt-1">
+                {stats.funFacts.maxWinStreak.startDate === stats.funFacts.maxWinStreak.endDate 
+                  ? stats.funFacts.maxWinStreak.startDate 
+                  : `${stats.funFacts.maxWinStreak.startDate.substring(5)} ~ ${stats.funFacts.maxWinStreak.endDate.substring(5)}`}
+              </div>
+            )}
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400 mb-1">共赢取</div>
@@ -163,6 +170,13 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Frown size={16} className="text-indigo-500" /> 最惨连跪记录
             </div>
             <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxLossStreak.count} <span className="text-base font-normal text-gray-400">连败</span></div>
+            {stats.funFacts.maxLossStreak.count > 0 && (
+              <div className="text-[11px] text-gray-400 mt-1">
+                {stats.funFacts.maxLossStreak.startDate === stats.funFacts.maxLossStreak.endDate 
+                  ? stats.funFacts.maxLossStreak.startDate 
+                  : `${stats.funFacts.maxLossStreak.startDate.substring(5)} ~ ${stats.funFacts.maxLossStreak.endDate.substring(5)}`}
+              </div>
+            )}
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400 mb-1">共输出</div>
