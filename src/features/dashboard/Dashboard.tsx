@@ -224,7 +224,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
             <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
               <Zap size={16} className="text-rose-500" /> 单局最痛
             </div>
-            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? formatMoney(-Math.abs(stats.funFacts.maxSingleLoss.amount)) : '¥0'}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? formatMoney(-Math.abs(stats.funFacts.maxSingleLoss.amount)) : formatMoney(0)}</div>
           </div>
           {stats.funFacts.maxSingleLoss ? (
             <div className="text-right">

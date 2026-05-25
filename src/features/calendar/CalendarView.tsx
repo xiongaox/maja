@@ -171,7 +171,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
             <div className="text-sm font-medium">
               当日净盈亏:
               <span className={`ml-2 text-lg font-bold ${dailyStats[selectedDay]?.net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {dailyStats[selectedDay] ? formatMoney(dailyStats[selectedDay].net, true) : '¥0'}
+                {dailyStats[selectedDay] ? formatMoney(dailyStats[selectedDay].net, true) : formatMoney(0)}
               </span>
             </div>
           </div>
