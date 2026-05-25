@@ -67,29 +67,55 @@ export function calculateStats(transactions: Transaction[]): Stats {
   // --- 趣味数据计算 (Fun Facts) ---
   const sortedTx = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
 
+  // 1. 按天将账单分组，计算每天的总净胜和笔数
+  const sessionsByDay: Record<string, { net: number, count: number }> = {};
+  sortedTx.forEach(t => {
+    const day = t.date.split(' ')[0];
+    if (!sessionsByDay[day]) {
+      sessionsByDay[day] = { net: 0, count: 0 };
+    }
+    sessionsByDay[day].net += t.amount;
+    sessionsByDay[day].count += 1;
+  });
+
+  // 2. 根据有效的“局”（每天账单笔数 >= 2）来计算连胜/连败
   let maxWinStreak = { count: 0, amount: 0 };
   let maxLossStreak = { count: 0, amount: 0 };
-  let maxSingleLoss: { amount: number; date: string; name: string } | null = null;
-
   let currentWinStreak = { count: 0, amount: 0 };
   let currentLossStreak = { count: 0, amount: 0 };
 
-  sortedTx.forEach(t => {
-    if (t.amount > 0) {
-      currentWinStreak.count += 1;
-      currentWinStreak.amount += t.amount;
-      currentLossStreak = { count: 0, amount: 0 }; // 重置连跪
-      if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
-        maxWinStreak = { ...currentWinStreak };
+  const sortedDays = Object.keys(sessionsByDay).sort((a, b) => a.localeCompare(b));
+  sortedDays.forEach(day => {
+    const session = sessionsByDay[day];
+    // 至少账单需要出现两个才算一局
+    if (session.count >= 2) {
+      if (session.net > 0) {
+        currentWinStreak.count += 1;
+        currentWinStreak.amount += session.net;
+        currentLossStreak = { count: 0, amount: 0 }; // 重置连跪
+        if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
+          maxWinStreak = { ...currentWinStreak };
+        }
+      } else if (session.net < 0) {
+        currentLossStreak.count += 1;
+        currentLossStreak.amount += Math.abs(session.net);
+        currentWinStreak = { count: 0, amount: 0 }; // 重置连胜
+        if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
+          maxLossStreak = { ...currentLossStreak };
+        }
+      } else {
+        // 净胜负为0，平局，打断连胜连败
+        currentWinStreak = { count: 0, amount: 0 };
+        currentLossStreak = { count: 0, amount: 0 };
       }
-    } else if (t.amount < 0) {
-      currentLossStreak.count += 1;
-      currentLossStreak.amount += Math.abs(t.amount);
-      currentWinStreak = { count: 0, amount: 0 }; // 重置连胜
-      if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
-        maxLossStreak = { ...currentLossStreak };
-      }
+    }
+    // 注意：如果 count < 2，不认为是一局，直接跳过，它不影响当前的连胜连败状态。
+  });
 
+  // 单笔最痛保持不变（查找金额最小的单笔支出）
+  let maxSingleLoss: { amount: number; date: string; name: string } | null = null;
+  sortedTx.forEach(t => {
+    if (t.amount < 0) {
       if (!maxSingleLoss || t.amount < maxSingleLoss.amount) {
         maxSingleLoss = { amount: t.amount, date: t.date, name: t.displayName || t.name };
       }
