@@ -67,36 +67,54 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Swords className="text-emerald-500" />
-          交锋战绩
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">
-          看看谁是你的专属财神爷，谁又是你的命中宿敌
-        </p>
+      <header className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Swords className="text-emerald-500" />
+            交锋战绩
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            看看谁是你的专属财神爷，谁又是你的命中宿敌
+          </p>
+        </div>
+
+        {/* PC 端数据汇总 */}
+        <div className="hidden md:flex items-center gap-6 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+              <BarChart2 size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总交易笔数</p>
+              <p className="text-xl font-black text-gray-800">{normalizedTransactions.length}</p>
+            </div>
+          </div>
+          <div className="h-10 w-px bg-gray-100" />
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">交锋人数</p>
+            <p className="text-xl font-black text-gray-800">{Object.keys(stats.playerStats).length}</p>
+          </div>
+          <div className="h-10 w-px bg-gray-100" />
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总流水</p>
+            <p className="text-xl font-black text-gray-800">{formatMoney(stats.totalWin + stats.totalLoss)}</p>
+          </div>
+        </div>
       </header>
 
-      {/* 数据汇总 */}
-      <div className="mb-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
-            <BarChart2 size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总交易笔数</p>
-            <p className="text-xl font-black text-gray-800">{normalizedTransactions.length}</p>
-          </div>
+      {/* 移动端数据汇总 */}
+      <div className="md:hidden grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">总笔数</p>
+          <p className="text-lg font-black text-gray-800">{normalizedTransactions.length}</p>
         </div>
-        <div className="h-10 w-px bg-gray-100 hidden md:block" />
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">交锋人数</p>
-          <p className="text-xl font-black text-gray-800">{Object.keys(stats.playerStats).length}</p>
+        <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">总人数</p>
+          <p className="text-lg font-black text-gray-800">{Object.keys(stats.playerStats).length}</p>
         </div>
-        <div className="h-10 w-px bg-gray-100 hidden md:block" />
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总流水</p>
-          <p className="text-xl font-black text-gray-800">{formatMoney(stats.totalWin + stats.totalLoss)}</p>
+        <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">总流水</p>
+          <p className="text-lg font-black text-gray-800">{formatMoney(stats.totalWin + stats.totalLoss)}</p>
         </div>
       </div>
 
