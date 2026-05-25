@@ -39,8 +39,10 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             />
             <div>
               <h4 className="font-bold text-gray-800 leading-tight">{player.name}</h4>
-              <p className="text-xs text-gray-400 font-medium mt-0.5">
-                流水: {Math.round(player.win + player.loss)}
+              <p className="text-xs font-medium mt-0.5 flex items-center gap-1.5">
+                <span className="text-emerald-500">+{Math.round(player.win)}</span>
+                <span className="text-gray-300 text-[10px]">|</span>
+                <span className="text-rose-500">-{Math.round(player.loss)}</span>
               </p>
             </div>
           </div>
