@@ -67,37 +67,55 @@ export function calculateStats(transactions: Transaction[]): Stats {
   // --- 趣味数据计算 (Fun Facts) ---
   const sortedTx = [...transactions].sort((a, b) => a.date.localeCompare(b.date));
 
-  // 1. 按天将账单分组，计算每天的总净胜和笔数
-  const sessionsByDay: Record<string, { net: number, count: number }> = {};
-  sortedTx.forEach(t => {
-    const day = t.date.split(' ')[0];
-    if (!sessionsByDay[day]) {
-      sessionsByDay[day] = { net: 0, count: 0 };
-    }
-    sessionsByDay[day].net += t.amount;
-    sessionsByDay[day].count += 1;
-  });
+  // 1. 按时间间隔分组，将超过 2 分钟的账单视为新的一局
+  const rounds: { txs: Transaction[], net: number }[] = [];
+  let currentRoundTxs: Transaction[] = [];
 
-  // 2. 根据有效的“局”（每天账单笔数 >= 2）来计算连胜/连败
+  sortedTx.forEach(t => {
+    if (currentRoundTxs.length === 0) {
+      currentRoundTxs.push(t);
+    } else {
+      const lastT = currentRoundTxs[currentRoundTxs.length - 1];
+      // 兼容 iOS 设备的日期解析
+      const tTime = new Date(t.date.replace(/-/g, '/')).getTime();
+      const lastTime = new Date(lastT.date.replace(/-/g, '/')).getTime();
+
+      // 如果当前账单与上一笔账单时间相差超过 2 分钟 (120,000 毫秒)，则视为新的一局
+      if (tTime - lastTime > 2 * 60 * 1000) {
+        rounds.push({
+          txs: currentRoundTxs,
+          net: currentRoundTxs.reduce((sum, tx) => sum + tx.amount, 0)
+        });
+        currentRoundTxs = [t];
+      } else {
+        currentRoundTxs.push(t);
+      }
+    }
+  });
+  if (currentRoundTxs.length > 0) {
+    rounds.push({
+      txs: currentRoundTxs,
+      net: currentRoundTxs.reduce((sum, tx) => sum + tx.amount, 0)
+    });
+  }
+
+  // 2. 根据聚合后的局来计算连胜/连败
   let maxWinStreak = { count: 0, amount: 0 };
   let maxLossStreak = { count: 0, amount: 0 };
   let currentWinStreak = { count: 0, amount: 0 };
   let currentLossStreak = { count: 0, amount: 0 };
 
-  const sortedDays = Object.keys(sessionsByDay).sort((a, b) => a.localeCompare(b));
-  sortedDays.forEach(day => {
-    const session = sessionsByDay[day];
-    // 只要有账单，这一天就记为一局（无论几笔转账，都汇总计算这一局的总盈亏）
-    if (session.net > 0) {
+  rounds.forEach(round => {
+    if (round.net > 0) {
       currentWinStreak.count += 1;
-      currentWinStreak.amount += session.net;
+      currentWinStreak.amount += round.net;
       currentLossStreak = { count: 0, amount: 0 }; // 重置连跪
       if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
         maxWinStreak = { ...currentWinStreak };
       }
-    } else if (session.net < 0) {
+    } else if (round.net < 0) {
       currentLossStreak.count += 1;
-      currentLossStreak.amount += Math.abs(session.net);
+      currentLossStreak.amount += Math.abs(round.net);
       currentWinStreak = { count: 0, amount: 0 }; // 重置连胜
       if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
         maxLossStreak = { ...currentLossStreak };
