@@ -100,10 +100,10 @@ export function calculateStats(transactions: Transaction[]): Stats {
   }
 
   // 2. 根据聚合后的局来计算连胜/连败
-  let maxWinStreak = { count: 0, amount: 0, startDate: '', endDate: '' };
-  let maxLossStreak = { count: 0, amount: 0, startDate: '', endDate: '' };
-  let currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '' };
-  let currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '' };
+  let maxWinStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] as Transaction[] };
+  let maxLossStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] as Transaction[] };
+  let currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] as Transaction[] };
+  let currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] as Transaction[] };
 
   rounds.forEach(round => {
     const roundDate = round.txs[0].date.split(' ')[0]; // 取那一局第一笔账单的日期
@@ -113,8 +113,9 @@ export function calculateStats(transactions: Transaction[]): Stats {
       currentWinStreak.count += 1;
       currentWinStreak.amount += round.net;
       currentWinStreak.endDate = roundDate;
+      currentWinStreak.txs.push(...round.txs);
       
-      currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '' }; // 重置连跪
+      currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] }; // 重置连跪
       
       if (currentWinStreak.count > maxWinStreak.count || (currentWinStreak.count === maxWinStreak.count && currentWinStreak.amount > maxWinStreak.amount)) {
         maxWinStreak = { ...currentWinStreak };
@@ -124,16 +125,17 @@ export function calculateStats(transactions: Transaction[]): Stats {
       currentLossStreak.count += 1;
       currentLossStreak.amount += Math.abs(round.net);
       currentLossStreak.endDate = roundDate;
+      currentLossStreak.txs.push(...round.txs);
       
-      currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '' }; // 重置连胜
+      currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] }; // 重置连胜
       
       if (currentLossStreak.count > maxLossStreak.count || (currentLossStreak.count === maxLossStreak.count && currentLossStreak.amount > maxLossStreak.amount)) {
         maxLossStreak = { ...currentLossStreak };
       }
     } else {
       // 净胜负为0，平局，打断连胜连败
-      currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '' };
-      currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '' };
+      currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] };
+      currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] };
     }
   });
 

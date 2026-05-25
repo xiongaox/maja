@@ -160,7 +160,22 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400 mb-1">共赢取</div>
-            <div className="text-lg font-bold text-orange-500">+{stats.funFacts.maxWinStreak.amount.toFixed(2)}</div>
+            <div className="text-lg font-bold text-orange-500 group relative cursor-help">
+              +{stats.funFacts.maxWinStreak.amount.toFixed(2)}
+              <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl z-50 text-left">
+                <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxWinStreak.txs.length}笔)：</div>
+                <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
+                  {stats.funFacts.maxWinStreak.txs.map(t => (
+                    <div key={t.id} className="flex justify-between items-center">
+                      <span className="text-gray-400">{t.date.slice(11, 16)} <span className="text-gray-200 ml-1">{t.displayName || t.name}</span></span>
+                      <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
+                        {t.amount > 0 ? "+" : ""}{t.amount.toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
