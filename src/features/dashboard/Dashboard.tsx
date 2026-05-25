@@ -144,39 +144,48 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
 
       {/* 趣味数据 (Fun Facts) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-orange-50 p-2 rounded-full text-orange-500"><Flame size={24} /></div>
-          <p className="text-sm font-medium text-gray-500 mb-2">最长连赢记录</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">{stats.funFacts.maxWinStreak.count}</span>
-            <span className="text-gray-400 font-medium">连胜</span>
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
+              <Flame size={16} className="text-orange-500" /> 最长连赢记录
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxWinStreak.count} <span className="text-base font-normal text-gray-400">连胜</span></div>
           </div>
-          <p className="text-xs text-orange-500 mt-2 font-medium">共赢取 +{stats.funFacts.maxWinStreak.amount.toFixed(2)} 元</p>
+          <div className="text-right">
+            <div className="text-sm text-gray-400 mb-1">共赢取</div>
+            <div className="text-lg font-bold text-orange-500">+{stats.funFacts.maxWinStreak.amount.toFixed(2)}</div>
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-indigo-50 p-2 rounded-full text-indigo-500"><Frown size={24} /></div>
-          <p className="text-sm font-medium text-gray-500 mb-2">最惨连跪记录</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">{stats.funFacts.maxLossStreak.count}</span>
-            <span className="text-gray-400 font-medium">连败</span>
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
+              <Frown size={16} className="text-indigo-500" /> 最惨连跪记录
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxLossStreak.count} <span className="text-base font-normal text-gray-400">连败</span></div>
           </div>
-          <p className="text-xs text-indigo-500 mt-2 font-medium">共输出 -{stats.funFacts.maxLossStreak.amount.toFixed(2)} 元</p>
+          <div className="text-right">
+            <div className="text-sm text-gray-400 mb-1">共输出</div>
+            <div className="text-lg font-bold text-indigo-500">-{stats.funFacts.maxLossStreak.amount.toFixed(2)}</div>
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
-          <div className="absolute top-4 right-4 bg-rose-50 p-2 rounded-full text-rose-500"><Zap size={24} /></div>
-          <p className="text-sm font-medium text-gray-500 mb-2">单局最惨痛</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? Math.abs(stats.funFacts.maxSingleLoss.amount).toFixed(2) : '0.00'}</span>
-            <span className="text-gray-400 font-medium">元</span>
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
+              <Zap size={16} className="text-rose-500" /> 单局最痛
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? Math.abs(stats.funFacts.maxSingleLoss.amount).toFixed(2) : '0.00'}</div>
           </div>
           {stats.funFacts.maxSingleLoss ? (
-            <p className="text-xs text-rose-500 mt-2 font-medium truncate" title={stats.funFacts.maxSingleLoss.name}>
-              交给了 {stats.funFacts.maxSingleLoss.name} ({stats.funFacts.maxSingleLoss.date.split(' ')[0]})
-            </p>
+            <div className="text-right">
+              <div className="text-sm text-gray-900 font-medium truncate max-w-[100px]" title={stats.funFacts.maxSingleLoss.name}>{stats.funFacts.maxSingleLoss.name}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{stats.funFacts.maxSingleLoss.date.split(' ')[0]}</div>
+            </div>
           ) : (
-            <p className="text-xs text-gray-400 mt-2 font-medium">暂无记录</p>
+            <div className="text-right">
+              <div className="text-sm text-gray-400">暂无记录</div>
+            </div>
           )}
         </div>
       </div>
