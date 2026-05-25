@@ -89,7 +89,7 @@ export function LandingPage() {
             </div>
             <p className="text-xs text-slate-400 mt-2">
               仅限小写字母和数字，方便分享。链接将是: <br/>
-              <span className="text-emerald-600 font-medium break-all">https://maja.app/?id={name || '...'}</span>
+              <span className="text-emerald-600 font-medium break-all">https://xxx.xx/?id={name || '...'}</span>
             </p>
           </div>
 
@@ -104,7 +104,7 @@ export function LandingPage() {
               value={pin}
               onChange={e => setPin(e.target.value)}
               placeholder="例如: 888888"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-shadow tracking-[0.5em] font-mono text-lg"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-shadow text-lg tracking-widest font-bold"
             />
             <p className="text-xs text-slate-400 mt-2">
               <strong className="text-amber-600">必填项。</strong>
