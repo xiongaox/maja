@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, DollarSign, TrendingUp, TrendingDown, Award, Frown, PieChart, Shield, LineChart as LineChartIcon, FileText, Upload, Flame, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { formatMoney } from '../../lib/format';
 import type { Stats, Transaction, DailyStat } from '../../types';
 
 interface DashboardProps {
@@ -106,7 +107,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-4xl font-bold tracking-tight">
-              {stats.latestDayNet > 0 ? '+' : ''}{Math.round(stats.latestDayNet)}
+              {formatMoney(stats.latestDayNet, true)}
             </span>
             <span className="text-emerald-100 font-medium">元</span>
           </div>
@@ -117,7 +118,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           <p className="text-sm font-medium text-gray-500 mb-2">累计总盈亏</p>
           <div className="flex items-baseline gap-1">
             <span className={`text-4xl font-bold tracking-tight ${stats.netProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-              {stats.netProfit > 0 ? '+' : ''}{Math.round(stats.netProfit)}
+              {formatMoney(stats.netProfit, true)}
             </span>
             <span className="text-gray-400 font-medium">元</span>
           </div>
@@ -127,7 +128,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           <div className="absolute top-4 right-4 bg-emerald-50 p-2 rounded-full text-emerald-500"><TrendingUp size={24} /></div>
           <p className="text-sm font-medium text-gray-500 mb-2">累计赢取</p>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">+{Math.round(stats.totalWin)}</span>
+            <span className="text-3xl font-bold text-gray-900">{formatMoney(stats.totalWin, true)}</span>
             <span className="text-gray-400 font-medium">元</span>
           </div>
         </div>
@@ -136,7 +137,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           <div className="absolute top-4 right-4 bg-rose-50 p-2 rounded-full text-rose-500"><TrendingDown size={24} /></div>
           <p className="text-sm font-medium text-gray-500 mb-2">累计输出</p>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">-{Math.round(stats.totalLoss)}</span>
+            <span className="text-3xl font-bold text-gray-900">{formatMoney(-stats.totalLoss)}</span>
             <span className="text-gray-400 font-medium">元</span>
           </div>
         </div>
@@ -161,7 +162,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           <div className="text-right">
             <div className="text-sm text-gray-400 mb-1">共赢取</div>
             <div className="text-lg font-bold text-orange-500 group relative cursor-help">
-              +{Math.round(stats.funFacts.maxWinStreak.amount)}
+              {formatMoney(stats.funFacts.maxWinStreak.amount, true)}
               <div className="hidden group-hover:block absolute right-0 top-full pt-2 w-64 z-50">
                 <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left">
                   <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxWinStreak.txs.length}笔)：</div>
@@ -170,7 +171,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
                       <div key={t.id} className="flex justify-between items-center">
                         <span className="text-gray-400">{t.date.slice(11, 16)} <span className="text-gray-200 ml-1">{t.displayName || t.name}</span></span>
                         <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
-                          {t.amount > 0 ? "+" : ""}{Math.round(t.amount)}
+                          {formatMoney(t.amount, true)}
                         </span>
                       </div>
                     ))}
@@ -198,7 +199,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           <div className="text-right">
             <div className="text-sm text-gray-400 mb-1">共输出</div>
             <div className="text-lg font-bold text-indigo-500 group relative cursor-help">
-              -{Math.round(stats.funFacts.maxLossStreak.amount)}
+              {formatMoney(-stats.funFacts.maxLossStreak.amount)}
               <div className="hidden group-hover:block absolute right-0 top-full pt-2 w-64 z-50">
                 <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left">
                   <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxLossStreak.txs.length}笔)：</div>
@@ -207,7 +208,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
                       <div key={t.id} className="flex justify-between items-center">
                         <span className="text-gray-400">{t.date.slice(11, 16)} <span className="text-gray-200 ml-1">{t.displayName || t.name}</span></span>
                         <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
-                          {t.amount > 0 ? "+" : ""}{Math.round(t.amount)}
+                          {formatMoney(t.amount, true)}
                         </span>
                       </div>
                     ))}
@@ -223,7 +224,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
             <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
               <Zap size={16} className="text-rose-500" /> 单局最痛
             </div>
-            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? Math.round(Math.abs(stats.funFacts.maxSingleLoss.amount)) : '0'}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? formatMoney(-Math.abs(stats.funFacts.maxSingleLoss.amount)) : '¥0'}</div>
           </div>
           {stats.funFacts.maxSingleLoss ? (
             <div className="text-right">

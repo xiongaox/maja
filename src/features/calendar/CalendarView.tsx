@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2 } from 'lucide-react';
 import type { Transaction } from '../../types';
 import { UserAvatar } from '../../components/UserAvatar';
+import { formatMoney } from '../../lib/format';
 
 interface CalendarViewProps {
   dailyStats: Record<string, { net: number; win: number; loss: number; count: number; records: Transaction[] }>;
@@ -77,7 +78,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
               {/* 有数据：金额居中放大显示 */}
               <div className="w-full h-full flex items-center justify-center pt-3 md:pt-4">
                 <span className={`text-sm sm:text-base md:text-xl font-black tracking-tight ${amountBadgeClass}`}>
-                  {amountSign}{Math.round(dayData.net)}
+                  {formatMoney(dayData.net, true)}
                 </span>
               </div>
             </>
@@ -170,7 +171,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
             <div className="text-sm font-medium">
               当日净盈亏:
               <span className={`ml-2 text-lg font-bold ${dailyStats[selectedDay]?.net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                {dailyStats[selectedDay] ? (dailyStats[selectedDay].net > 0 ? '+' : '') + Math.round(dailyStats[selectedDay].net) : '0'}
+                {dailyStats[selectedDay] ? formatMoney(dailyStats[selectedDay].net, true) : '¥0'}
               </span>
             </div>
           </div>
@@ -193,7 +194,7 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={`font-bold text-lg ${tx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                      {tx.amount > 0 ? '+' : ''}{Math.round(tx.amount)}
+                      {formatMoney(tx.amount, true)}
                     </span>
                     <button onClick={() => onRemoveTransaction(tx.id)} className="text-gray-300 hover:text-rose-500 transition-colors"><Trash2 size={16} /></button>
                   </div>
