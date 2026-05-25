@@ -25,6 +25,17 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
       }));
   }, [dailyStats]);
 
+  const [isMobile, setIsMobile] = React.useState(false);
+  
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const displayChartData = isMobile ? chartData.slice(-7) : chartData;
+
   const isEmpty = normalizedTransactions.length === 0;
 
   return (
@@ -139,10 +150,10 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
         </div>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+            <LineChart data={displayChartData} margin={isMobile ? { top: 10, right: 0, left: 0, bottom: 10 } : { top: 10, right: 10, left: -10, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
               <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} mirror={isMobile} />
               <Tooltip
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 formatter={(value: any, name: any) => [`${value} 元`, name]}
