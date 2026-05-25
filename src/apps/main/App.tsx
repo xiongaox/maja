@@ -637,6 +637,14 @@ export default function MahjongTracker() {
         </button>
       </div>
 
+      {/* 移动端侧边栏遮罩 */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 md:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* 侧边栏 */}
       <aside className={`
         fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out
