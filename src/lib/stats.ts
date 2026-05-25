@@ -111,9 +111,12 @@ export function calculateStats(transactions: Transaction[]): Stats {
     if (round.net > 0) {
       if (currentWinStreak.count === 0) currentWinStreak.startDate = roundDate;
       currentWinStreak.count += 1;
-      currentWinStreak.amount += round.net;
+      
+      // 只累加收入，剔除支出（如给别人的杠钱）
+      const winTxs = round.txs.filter(t => t.amount > 0);
+      currentWinStreak.amount += winTxs.reduce((sum, t) => sum + t.amount, 0);
       currentWinStreak.endDate = roundDate;
-      currentWinStreak.txs.push(...round.txs);
+      currentWinStreak.txs.push(...winTxs);
       
       currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] }; // 重置连跪
       
@@ -123,9 +126,12 @@ export function calculateStats(transactions: Transaction[]): Stats {
     } else if (round.net < 0) {
       if (currentLossStreak.count === 0) currentLossStreak.startDate = roundDate;
       currentLossStreak.count += 1;
-      currentLossStreak.amount += Math.abs(round.net);
+      
+      // 只累加支出，剔除收入（如收别人的杠钱）
+      const lossTxs = round.txs.filter(t => t.amount < 0);
+      currentLossStreak.amount += lossTxs.reduce((sum, t) => sum + Math.abs(t.amount), 0);
       currentLossStreak.endDate = roundDate;
-      currentLossStreak.txs.push(...round.txs);
+      currentLossStreak.txs.push(...lossTxs);
       
       currentWinStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] }; // 重置连胜
       
