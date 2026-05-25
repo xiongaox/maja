@@ -105,15 +105,15 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
       {/* 移动端数据汇总 */}
       <div className="md:hidden grid grid-cols-3 gap-3 mb-6">
         <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">总笔数</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">总笔数</p>
           <p className="text-lg font-black text-gray-800">{normalizedTransactions.length}</p>
         </div>
         <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">总人数</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">总人数</p>
           <p className="text-lg font-black text-gray-800">{Object.keys(stats.playerStats).length}</p>
         </div>
         <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-center flex flex-col items-center justify-center">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">总流水</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">总流水</p>
           <p className="text-lg font-black text-gray-800">{formatMoney(stats.totalWin + stats.totalLoss)}</p>
         </div>
       </div>
