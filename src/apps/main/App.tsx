@@ -695,15 +695,17 @@ export default function MahjongTracker() {
 
         <div className="p-4 border-t border-gray-100 space-y-3">
           {/* 系统同步与设置 */}
-          <button 
-            onClick={() => setIsSystemModalOpen(true)}
-            className="w-full py-2.5 text-sm bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
-          >
-            {syncStatus === 'syncing' ? <CloudUpload size={16} className="animate-bounce text-emerald-500" /> :
-             syncStatus === 'synced' ? <Cloud size={16} className="text-emerald-500" /> : 
-             <CloudOff size={16} className="text-rose-500" />}
-            空间同步与备份
-          </button>
+          {role === 'admin' && (
+            <button 
+              onClick={() => setIsSystemModalOpen(true)}
+              className="w-full py-2.5 text-sm bg-gray-50 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+            >
+              {syncStatus === 'syncing' ? <CloudUpload size={16} className="animate-bounce text-emerald-500" /> :
+               syncStatus === 'synced' ? <Cloud size={16} className="text-emerald-500" /> : 
+               <CloudOff size={16} className="text-rose-500" />}
+              空间同步与备份
+            </button>
+          )}
           
           {/* 创建专属记账本 */}
           <button 
