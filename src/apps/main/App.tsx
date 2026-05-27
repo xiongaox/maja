@@ -15,9 +15,9 @@ import { PlayerStats } from '../../features/stats/PlayerStats';
 import { CalendarView } from '../../features/calendar/CalendarView';
 import { DataConfig } from '../../features/config/DataConfig';
 import { LandingPage } from './LandingPage';
-import { PasswordModal } from '../../components/PasswordModal';
+import { EntryModal } from '../../components/EntryModal';
 import { SystemSettingsModal } from '../../components/SystemSettingsModal';
-import { getSpaceData, updateTransactions, updateConfig, type SpaceData } from '../../lib/api';
+import { getSpaceData, updateTransactions, updateConfig, verifyPin, type SpaceData } from '../../lib/api';
 import { Cloud, CloudOff, CloudUpload, Share2 } from 'lucide-react';
 import { buildPipeline, DEFAULT_FILTER_OPTIONS, type FilterOptions } from '../../lib/pipeline';
 import { calculateStats, calculateDailyStats } from '../../lib/stats';
@@ -63,9 +63,8 @@ export default function MahjongTracker() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'error'>('synced');
   
-  // 密码相关
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<((pin: string) => Promise<void>) | null>(null);
+  // 角色和认证
+  const [role, setRole] = useState<'admin' | 'guest' | null>(null);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
 
   // 核心数据状态
@@ -89,12 +88,27 @@ export default function MahjongTracker() {
     if (id) {
       setSpaceId(id);
       getSpaceData(id)
-        .then((data) => {
+        .then(async (data) => {
           setTransactions(data.tx || []);
           if (data.cfg) {
             setWhitelist(data.cfg.whitelist || []);
             setMergeRules(data.cfg.mergeRules || []);
             setFilterOptions(data.cfg.filterOptions || DEFAULT_FILTER_OPTIONS);
+          }
+          
+          // 静默验证本地存储的密码
+          const savedPin = sessionStorage.getItem(`maja_pin_${id}`);
+          if (savedPin) {
+            try {
+              const isValid = await verifyPin(id, savedPin);
+              if (isValid) {
+                setRole('admin');
+              } else {
+                sessionStorage.removeItem(`maja_pin_${id}`);
+              }
+            } catch (e) {
+              console.error("Failed to verify PIN", e);
+            }
           }
         })
         .catch(err => {
@@ -112,23 +126,22 @@ export default function MahjongTracker() {
   const executeWithAuth = useCallback(async (action: (pin: string) => Promise<void>) => {
     if (!spaceId) return;
     const savedPin = sessionStorage.getItem(`maja_pin_${spaceId}`);
-    if (savedPin) {
+    if (savedPin && role === 'admin') {
       try {
         await action(savedPin);
       } catch (err: any) {
         if (err.message === 'Invalid PIN') {
           sessionStorage.removeItem(`maja_pin_${spaceId}`);
-          setPendingAction(() => action);
-          setIsPasswordModalOpen(true);
+          setRole(null);
+          setErrorMsg('密码已失效，请重新验证');
         } else {
           throw err;
         }
       }
     } else {
-      setPendingAction(() => action);
-      setIsPasswordModalOpen(true);
+      setRole(null);
     }
-  }, [spaceId]);
+  }, [spaceId, role]);
 
   // 3. 同步状态包装器
   const syncTransactions = useCallback((newTx: Transaction[]) => {
@@ -614,7 +627,21 @@ export default function MahjongTracker() {
   }
 
   return (
-    <div className="h-screen w-full bg-slate-50 font-sans flex flex-col md:flex-row text-gray-800 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 relative overflow-hidden">
+      <EntryModal 
+        isOpen={role === null}
+        onUnlock={async (pin) => {
+          const isValid = await verifyPin(spaceId, pin);
+          if (isValid) {
+            sessionStorage.setItem(`maja_pin_${spaceId}`, pin);
+            setRole('admin');
+          } else {
+            throw new Error("密码错误");
+          }
+        }}
+        onGuest={() => setRole('guest')}
+      />
+
       {/* 全局加载遮罩 */}
       {isUploading && (
         <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
@@ -658,10 +685,12 @@ export default function MahjongTracker() {
         </div>
 
         <nav className="flex-1 px-4 py-4 md:py-0 space-y-2 mt-4 md:mt-0">
-          <SidebarItem icon={LayoutDashboard} label="数据概览" id="dashboard" activeTab={activeTab} onClick={handleTabClick} />
+          <SidebarItem icon={LayoutDashboard} label="首页仪表盘" id="dashboard" activeTab={activeTab} onClick={handleTabClick} />
           <SidebarItem icon={Swords} label="交锋战绩" id="stats" activeTab={activeTab} onClick={handleTabClick} />
-          <SidebarItem icon={CalendarIcon} label="战绩日历" id="calendar" activeTab={activeTab} onClick={handleTabClick} />
-          <SidebarItem icon={SettingsIcon} label="数据配置" id="config" activeTab={activeTab} onClick={handleTabClick} />
+          <SidebarItem icon={CalendarIcon} label="历史流水" id="calendar" activeTab={activeTab} onClick={handleTabClick} />
+          {role === 'admin' && (
+            <SidebarItem icon={SettingsIcon} label="数据配置" id="config" activeTab={activeTab} onClick={handleTabClick} />
+          )}
         </nav>
 
         <div className="p-4 border-t border-gray-100 space-y-3">
@@ -714,6 +743,7 @@ export default function MahjongTracker() {
               fileInputRef={fileInputRef}
               isUploading={isUploading}
               whitelistCount={whitelist.length}
+              isAdmin={role === 'admin'}
             />
           )}
 
@@ -733,7 +763,7 @@ export default function MahjongTracker() {
             />
           )}
 
-          {activeTab === 'config' && (
+          {activeTab === 'config' && role === 'admin' && (
             <DataConfig
               transactions={transactions}
               mergeRules={mergeRules}
@@ -760,22 +790,6 @@ export default function MahjongTracker() {
         </div>
       </main>
     
-      <PasswordModal 
-        isOpen={isPasswordModalOpen}
-        onClose={() => {
-          setIsPasswordModalOpen(false);
-          setPendingAction(null);
-        }}
-        onSubmit={async (pin) => {
-          if (pendingAction) {
-            await pendingAction(pin);
-            sessionStorage.setItem(`maja_pin_${spaceId}`, pin);
-          }
-          setIsPasswordModalOpen(false);
-          setPendingAction(null);
-        }}
-      />
-
       <SystemSettingsModal
         isOpen={isSystemModalOpen}
         onClose={() => setIsSystemModalOpen(false)}

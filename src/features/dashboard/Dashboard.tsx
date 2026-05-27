@@ -12,9 +12,10 @@ interface DashboardProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   isUploading: boolean;
   whitelistCount: number;
+  isAdmin?: boolean;
 }
 
-export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpload, fileInputRef, isUploading, whitelistCount }: DashboardProps) {
+export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpload, fileInputRef, isUploading, whitelistCount, isAdmin = true }: DashboardProps) {
   const chartData = React.useMemo(() => {
     return Object.entries(dailyStats)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -54,22 +55,24 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           </p>
         </div>
 
-        <div className={isEmpty ? "hidden" : "relative group w-full md:w-auto"}>
-          <input
-            type="file"
-            multiple
-            accept=".csv, .xlsx, .xls"
-            onChange={onFileUpload}
-            ref={fileInputRef}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            disabled={isUploading}
-          />
-          <button className={`w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-white transition-all shadow-lg shadow-emerald-200
-            ${isUploading ? 'bg-emerald-400 cursor-wait' : 'bg-emerald-500 hover:bg-emerald-600 hover:-translate-y-0.5'}`}>
-            <TrendingUp size={18} className={isUploading ? 'animate-bounce' : ''} />
-            {isUploading ? '解析中...' : '导入账单文件 (Excel/CSV)'}
-          </button>
-        </div>
+        {isAdmin && (
+          <div className={isEmpty ? "hidden" : "relative group w-full md:w-auto"}>
+            <input
+              type="file"
+              multiple
+              accept=".csv, .xlsx, .xls"
+              onChange={onFileUpload}
+              ref={fileInputRef}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              disabled={isUploading}
+            />
+            <button className={`w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-white transition-all shadow-lg shadow-emerald-200
+              ${isUploading ? 'bg-emerald-400 cursor-wait' : 'bg-emerald-500 hover:bg-emerald-600 hover:-translate-y-0.5'}`}>
+              <TrendingUp size={18} className={isUploading ? 'animate-bounce' : ''} />
+              {isUploading ? '解析中...' : '导入账单文件 (Excel/CSV)'}
+            </button>
+          </div>
+        )}
       </header>
 
       {isEmpty ? (
@@ -79,15 +82,19 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">暂无交易记录</h3>
           <p className="text-gray-500 max-w-md mb-8 leading-relaxed">
-            你还没有导入任何账单。点击右上角的“导入账单文件”按钮，上传微信或支付宝导出的 Excel/CSV 文件，开始你的雀神记账之旅吧！
+            {isAdmin 
+              ? '你还没有导入任何账单。点击右上角的“导入账单文件”按钮，上传微信或支付宝导出的 Excel/CSV 文件，开始你的雀神记账之旅吧！'
+              : '这个空间还没有任何账单记录，请等待空间管理员上传数据。'}
           </p>
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200/50 flex items-center gap-2"
-          >
-            <Upload size={18} />
-            立即导入
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200/50 flex items-center gap-2"
+            >
+              <Upload size={18} />
+              立即导入
+            </button>
+          )}
         </div>
       ) : (
         <>

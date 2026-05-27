@@ -44,6 +44,26 @@ export async function getSpaceData(id: string): Promise<SpaceData> {
   }
 }
 
+export async function verifyPin(id: string, pin: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/verify/${id}`, {
+      headers: {
+        'X-Space-Pin': pin
+      }
+    });
+    if (res.status === 403) return false;
+    if (!res.ok) throw new Error("API Error");
+    return true;
+  } catch (e) {
+    if (isLocalDev) {
+      // In local mock dev, just assume true since we don't mock auth strictly, 
+      // or check localStorage if we want. For simplicity, just return true.
+      return true;
+    }
+    throw e;
+  }
+}
+
 export async function updateTransactions(id: string, pin: string, tx: Transaction[]): Promise<boolean> {
   try {
     const res = await fetch(`/api/tx/${id}`, {
