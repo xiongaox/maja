@@ -24,7 +24,7 @@ export function SystemSettingsModal({
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`https://xxx.xx/?id=${spaceId}`);
+    navigator.clipboard.writeText(`${window.location.origin}/?id=${spaceId}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -50,7 +50,7 @@ export function SystemSettingsModal({
               <input 
                 type="text" 
                 readOnly 
-                value={`https://xxx.xx/?id=${spaceId}`}
+                value={`${window.location.origin}/?id=${spaceId}`}
                 className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-600 text-sm focus:outline-none"
               />
               <button 

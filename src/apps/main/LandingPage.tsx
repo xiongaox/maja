@@ -89,7 +89,7 @@ export function LandingPage() {
             </div>
             <p className="text-xs text-slate-400 mt-2">
               仅限小写字母和数字，方便分享。链接将是: <br/>
-              <span className="text-emerald-600 font-medium break-all">https://xxx.xx/?id={name || '...'}</span>
+              <span className="text-emerald-600 font-medium break-all">{window.location.origin}/?id={name || '...'}</span>
             </p>
           </div>
 
