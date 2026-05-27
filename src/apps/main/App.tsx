@@ -627,7 +627,7 @@ export default function MahjongTracker() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 relative overflow-hidden">
+    <div className="h-screen w-full bg-slate-50 font-sans flex flex-col md:flex-row text-gray-800 overflow-hidden relative">
       <EntryModal 
         isOpen={role === null}
         onUnlock={async (pin) => {
