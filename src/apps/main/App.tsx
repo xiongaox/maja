@@ -776,8 +776,11 @@ export default function MahjongTracker() {
           {activeTab === 'calendar' && (
             <CalendarView
               dailyStats={dailyStats}
+              isAdmin={role === 'admin'}
               onRemoveTransaction={(id) => {
-                syncTransactions(transactions.filter(t => t.id !== id));
+                if (window.confirm('确定要删除这条记录吗？此操作不可恢复。')) {
+                  syncTransactions(transactions.filter(t => t.id !== id));
+                }
               }}
             />
           )}

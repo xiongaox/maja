@@ -6,13 +6,14 @@ import { formatMoney } from '../../lib/format';
 
 interface CalendarViewProps {
   dailyStats: Record<string, { net: number; win: number; loss: number; count: number; records: Transaction[] }>;
+  isAdmin?: boolean;
   onRemoveTransaction: (id: string) => void;
 }
 
 const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
-export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewProps) {
+export function CalendarView({ dailyStats, isAdmin, onRemoveTransaction }: CalendarViewProps) {
   // 自动定位到最新有数据的月份，否则显示当前月份
   const [currentDate, setCurrentDate] = useState(() => {
     const dates = Object.keys(dailyStats).sort();
@@ -196,7 +197,11 @@ export function CalendarView({ dailyStats, onRemoveTransaction }: CalendarViewPr
                     <span className={`font-bold text-lg ${tx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                       {formatMoney(tx.amount, true)}
                     </span>
-                    <button onClick={() => onRemoveTransaction(tx.id)} className="text-gray-300 hover:text-rose-500 transition-colors"><Trash2 size={16} /></button>
+                    {isAdmin && (
+                      <button onClick={() => onRemoveTransaction(tx.id)} className="text-gray-300 hover:text-rose-500 transition-colors">
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
