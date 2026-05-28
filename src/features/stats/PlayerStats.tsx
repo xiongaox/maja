@@ -14,18 +14,12 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
   const winners = players.filter(p => p.net >= 0).sort((a, b) => b.net - a.net);
   const losers = players.filter(p => p.net < 0).sort((a, b) => a.net - b.net); // 最亏的在前面（绝对值大）
 
-  const maxWin = Math.max(...winners.map(p => p.net), 1);
-  const maxLoss = Math.max(...losers.map(p => Math.abs(p.net)), 1);
+  const maxFlow = Math.max(...players.map(p => p.win + p.loss), 1);
 
-  const renderPlayerCard = (player: any, maxVal: number, isWinner: boolean) => {
-    const absNet = Math.abs(player.net);
-    const widthPct = (absNet / maxVal) * 100;
-    
-    // 游戏化血条：收入（绿）和支出（红）的博弈
-    // 计算总流水
-    const totalFlow = player.win + player.loss || 1;
-    const winPct = (player.win / totalFlow) * 100;
-    const lossPct = (player.loss / totalFlow) * 100;
+  const renderPlayerCard = (player: any, isWinner: boolean) => {
+    // 改为以全局最大流水为基准，这样所有人红绿条的物理长度就具有了绝对的可比性
+    const winPct = (player.win / maxFlow) * 100;
+    const lossPct = (player.loss / maxFlow) * 100;
 
     return (
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -160,7 +154,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
           </div>
           <div className="space-y-3">
             {winners.length > 0 ? (
-              winners.map(p => renderPlayerCard(p, maxWin, true))
+              winners.map(p => renderPlayerCard(p, true))
             ) : (
               <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 text-sm">
                 还没有在任何人身上盈利，继续努力！
@@ -176,7 +170,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
           </div>
           <div className="space-y-3">
             {losers.length > 0 ? (
-              losers.map(p => renderPlayerCard(p, maxLoss, false))
+              losers.map(p => renderPlayerCard(p, false))
             ) : (
               <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 text-sm">
                 竟然没有在任何人身上亏损，雀神本神！
