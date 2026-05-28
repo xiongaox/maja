@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Cloud, Download, Upload, Trash2, Copy, Check, ChevronDown, FileJson, Database, Shield } from 'lucide-react';
+import { X, Cloud, Download, Upload, Trash2, Copy, Check, ChevronDown, ChevronUp, FileJson, Database, Shield } from 'lucide-react';
 
 interface SystemSettingsModalProps {
   isOpen: boolean;
@@ -106,11 +106,11 @@ export function SystemSettingsModal({
                   onClick={() => setExportOpen(!exportOpen)}
                   className="w-full py-3 text-sm bg-slate-50 text-slate-700 font-bold rounded-xl hover:bg-slate-100 flex items-center justify-center gap-2 border border-slate-200 transition-colors"
                 >
-                  <Download size={16} /> 导出备份 <ChevronDown size={14} className={`transition-transform duration-200 ${exportOpen ? 'rotate-180' : ''}`} />
+                  <Download size={16} /> 导出备份 <ChevronUp size={14} className={`transition-transform duration-200 ${exportOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {exportOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-10 animate-in fade-in slide-in-from-top-2">
+                  <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-2">
                     <button 
                       onClick={() => { onExportConfig(); setExportOpen(false); }}
                       className="w-full px-4 py-3 text-sm text-left flex items-center gap-3 hover:bg-slate-50 transition-colors border-b border-slate-50"
