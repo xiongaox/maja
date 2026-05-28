@@ -778,9 +778,7 @@ export default function MahjongTracker() {
               dailyStats={dailyStats}
               isAdmin={role === 'admin'}
               onRemoveTransaction={(id) => {
-                if (window.confirm('确定要删除这条记录吗？此操作不可恢复。')) {
-                  syncTransactions(transactions.filter(t => t.id !== id));
-                }
+                syncTransactions(transactions.filter(t => t.id !== id));
               }}
             />
           )}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2, AlertTriangle } from 'lucide-react';
 import type { Transaction } from '../../types';
 import { UserAvatar } from '../../components/UserAvatar';
 import { formatMoney } from '../../lib/format';
@@ -25,6 +25,7 @@ export function CalendarView({ dailyStats, isAdmin, onRemoveTransaction }: Calen
     return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState(currentDate.getFullYear());
 
@@ -198,7 +199,7 @@ export function CalendarView({ dailyStats, isAdmin, onRemoveTransaction }: Calen
                       {formatMoney(tx.amount, true)}
                     </span>
                     {isAdmin && (
-                      <button onClick={() => onRemoveTransaction(tx.id)} className="text-gray-300 hover:text-rose-500 transition-colors">
+                      <button onClick={() => setDeleteConfirmId(tx.id)} className="text-gray-300 hover:text-rose-500 transition-colors">
                         <Trash2 size={16} />
                       </button>
                     )}
@@ -212,6 +213,38 @@ export function CalendarView({ dailyStats, isAdmin, onRemoveTransaction }: Calen
               <p>这一天没有打麻将哦</p>
             </div>
           )}
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mb-4">
+                <AlertTriangle size={24} />
+              </div>
+              <h3 className="font-bold text-slate-800 text-lg mb-2">确认删除记录</h3>
+              <p className="text-sm text-slate-500 mb-6">确定要删除这条记录吗？删除后系统将重新计算相关数据。</p>
+              
+              <div className="flex w-full gap-3">
+                <button
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => {
+                    onRemoveTransaction(deleteConfirmId);
+                    setDeleteConfirmId(null);
+                  }}
+                  className="flex-1 py-2.5 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 shadow-sm shadow-rose-500/20 transition-colors"
+                >
+                  确认删除
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
