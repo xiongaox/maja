@@ -545,7 +545,32 @@ export default function MahjongTracker() {
     }
   }, []);
 
-  // 导出完整备份
+  // 导出用户数据 (白名单过滤后的纯净数据)
+  const handleExportUserData = useCallback(() => {
+    const backup = {
+      version: '1.0',
+      type: 'user_data_backup',
+      exportDate: new Date().toISOString(),
+      whitelist,
+      mergeRules,
+      filterOptions,
+      transactions: pipelineResult.final, // 导出经过白名单清洗和别名合并后的最终数据
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `maja-userdata-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    setSuccessMsg('用户数据已导出！');
+  }, [whitelist, mergeRules, filterOptions, pipelineResult.final]);
+
+  // 导出完整备份 (包含原始未清洗的Excel底层数据)
   const handleExportFull = useCallback(() => {
     const backup = {
       version: '1.0',
@@ -554,7 +579,7 @@ export default function MahjongTracker() {
       whitelist,
       mergeRules,
       filterOptions,
-      transactions: pipelineResult.final, // 只导出经过所有清洗（金额、类型、白名单）后的最终数据
+      transactions: transactions, // 导出底层全部原始数据
     };
     
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -568,10 +593,10 @@ export default function MahjongTracker() {
     URL.revokeObjectURL(url);
     
     setSuccessMsg('完整备份已导出！');
-  }, [whitelist, mergeRules, filterOptions, pipelineResult.final]);
+  }, [whitelist, mergeRules, filterOptions, transactions]);
 
-  // 导入完整备份
-  const handleImportFull = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // 导入数据备份 (支持完整备份与用户数据备份)
+  const handleImportBackup = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -579,12 +604,12 @@ export default function MahjongTracker() {
       const text = await file.text();
       const backup = JSON.parse(text);
       
-      if (!backup.version || backup.type !== 'full_backup' || !backup.transactions) {
-        setErrorMsg('不是有效的完整备份文件，请检查文件格式。');
+      if (!backup.version || !['full_backup', 'user_data_backup'].includes(backup.type) || !backup.transactions) {
+        setErrorMsg('不是有效的数据备份文件，请检查文件格式。');
         return;
       }
 
-      if (confirm(`即将恢复 ${backup.transactions.length} 条交易记录并覆盖现有配置，确定吗？此操作将清空当前所有数据。`)) {
+      if (confirm(`即将恢复 ${backup.transactions.length} 条底层交易记录并覆盖现有配置，确定吗？此操作将清空当前所有数据。`)) {
         setWhitelist(backup.whitelist || []);
         setMergeRules(backup.mergeRules || []);
         if (backup.filterOptions) {
@@ -594,7 +619,9 @@ export default function MahjongTracker() {
         const newFilterOptions = backup.filterOptions || DEFAULT_FILTER_OPTIONS;
         syncConfig({ whitelist: backup.whitelist || [], mergeRules: backup.mergeRules || [], filterOptions: newFilterOptions });
         syncTransactions(backup.transactions);
-        setSuccessMsg('完整备份恢复成功！');
+        
+        const msg = backup.type === 'full_backup' ? '完整数据恢复成功！' : '用户数据恢复成功！';
+        setSuccessMsg(msg);
       }
     } catch (err: any) {
       setErrorMsg('恢复失败：' + err.message);
@@ -800,8 +827,9 @@ export default function MahjongTracker() {
         transactionsLength={transactions.length}
         onExportConfig={handleExportConfig}
         onImportConfig={handleImportConfig}
+        onExportUserData={handleExportUserData}
         onExportFull={handleExportFull}
-        onImportFull={handleImportFull}
+        onImportBackup={handleImportBackup}
         onClearConfig={handleClearConfig}
         onClearData={() => {
           if (confirm(`确定要清空所有 ${transactions.length} 条交易数据吗？此操作不可撤销。`)) {
