@@ -272,7 +272,7 @@ export function DataConfig({
               )}
             </div>
 
-            <div className="flex-1 px-4 pb-4 md:px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start content-start mt-4">
+            <div className="flex-1 px-4 pb-4 md:px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 content-start mt-4">
               
               {isCreatingGroup && (
                 <div className="bg-emerald-50/50 border-2 border-emerald-200 rounded-2xl flex flex-col p-4 shadow-inner">
@@ -306,7 +306,7 @@ export function DataConfig({
                 return (
                   <div
                     key={rule.id}
-                    className={`bg-white border rounded-2xl shadow-sm transition-all ${
+                    className={`bg-white border rounded-2xl shadow-sm transition-all h-full flex flex-col ${
                       dragOverGroup === rule.id
                         ? 'border-emerald-400 ring-2 ring-emerald-400/20 bg-emerald-50/30'
                         : 'border-gray-100 hover:shadow-md'
@@ -380,7 +380,7 @@ export function DataConfig({
 
                     {/* 收付款方名 —— 小 chip 行 */}
                     {!isEditing && (
-                      <div className="flex flex-wrap gap-1.5 items-center px-4 pt-3 pb-4">
+                      <div className="flex flex-wrap gap-1.5 items-center px-4 pt-3 pb-4 flex-1 content-start">
                         {rule.aliases.map(alias => (
                           <span key={alias}
                             className="inline-flex items-center gap-1 bg-slate-50 text-slate-500 text-xs px-2.5 py-1 rounded-lg border border-slate-200">
