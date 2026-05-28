@@ -154,8 +154,8 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
-              <Flame size={16} className="text-orange-500" /> 最长连赢记录
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm whitespace-nowrap">
+              <Flame size={16} className="text-orange-500" /> 最长连胜
             </div>
             <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxWinStreak.count} <span className="text-base font-normal text-gray-400">连胜</span></div>
             {stats.funFacts.maxWinStreak.count > 0 && (
@@ -191,8 +191,8 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
 
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
-              <Frown size={16} className="text-indigo-500" /> 最惨连跪记录
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm whitespace-nowrap">
+              <Frown size={16} className="text-indigo-500" /> 最惨连败
             </div>
             <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxLossStreak.count} <span className="text-base font-normal text-gray-400">连败</span></div>
             {stats.funFacts.maxLossStreak.count > 0 && (
@@ -228,7 +228,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
 
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm whitespace-nowrap">
               <Zap size={16} className="text-rose-500" /> 单局最痛
             </div>
             <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleLoss ? formatMoney(-Math.abs(stats.funFacts.maxSingleLoss.amount)) : formatMoney(0)}</div>
@@ -247,8 +247,8 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
 
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
-              <Zap size={16} className="text-emerald-500" /> 让搭子最痛
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm whitespace-nowrap">
+              <Zap size={16} className="text-emerald-500" /> 搭子最痛
             </div>
             <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleWin ? formatMoney(stats.funFacts.maxSingleWin.amount, true) : formatMoney(0)}</div>
           </div>
@@ -266,8 +266,8 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
 
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
-              <Award size={16} className="text-emerald-500" /> 赢得最多的一局
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm whitespace-nowrap">
+              <Award size={16} className="text-emerald-500" /> 单局最高
             </div>
             <div className="text-2xl font-bold text-gray-900 group relative cursor-help">
               {stats.funFacts.maxRoundWin ? formatMoney(stats.funFacts.maxRoundWin.winAmount, true) : formatMoney(0)}
