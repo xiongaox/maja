@@ -158,12 +158,12 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Flame size={16} className="text-orange-500" /> 最长连胜
             </div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.funFacts.maxWinStreak.count} <span className="text-sm font-normal text-gray-400">连胜</span>
+              <div className="text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight">
+                {stats.funFacts.maxWinStreak.count} <span className="text-base md:text-sm xl:text-base font-normal text-gray-400">连胜</span>
               </div>
               {stats.funFacts.maxWinStreak.count > 0 && (
-                <div className="text-sm font-bold text-orange-500 group relative cursor-help">
-                  {formatMoney(stats.funFacts.maxWinStreak.amount, true)}<span className="text-xs font-normal opacity-70 ml-0.5">元</span>
+                <div className="text-xl md:text-base xl:text-xl font-bold text-orange-500 group relative cursor-help">
+                  {formatMoney(stats.funFacts.maxWinStreak.amount, true)}<span className="text-sm md:text-xs xl:text-sm font-normal opacity-70 ml-0.5">元</span>
                   <div className="hidden group-hover:block absolute left-0 top-full pt-2 w-64 z-50">
                     <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left font-normal">
                       <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxWinStreak.txs.length}笔)：</div>
@@ -198,12 +198,12 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Frown size={16} className="text-indigo-500" /> 最惨连败
             </div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.funFacts.maxLossStreak.count} <span className="text-sm font-normal text-gray-400">连败</span>
+              <div className="text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight">
+                {stats.funFacts.maxLossStreak.count} <span className="text-base md:text-sm xl:text-base font-normal text-gray-400">连败</span>
               </div>
               {stats.funFacts.maxLossStreak.count > 0 && (
-                <div className="text-sm font-bold text-indigo-500 group relative cursor-help">
-                  {formatMoney(-stats.funFacts.maxLossStreak.amount)}<span className="text-xs font-normal opacity-70 ml-0.5">元</span>
+                <div className="text-xl md:text-base xl:text-xl font-bold text-indigo-500 group relative cursor-help">
+                  {formatMoney(-stats.funFacts.maxLossStreak.amount)}<span className="text-sm md:text-xs xl:text-sm font-normal opacity-70 ml-0.5">元</span>
                   <div className="hidden group-hover:block absolute left-0 top-full pt-2 w-64 z-50">
                     <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left font-normal">
                       <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxLossStreak.txs.length}笔)：</div>
@@ -238,11 +238,11 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Zap size={16} className="text-rose-500" /> 单局最痛
             </div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.funFacts.maxSingleLoss ? formatMoney(-Math.abs(stats.funFacts.maxSingleLoss.amount)) : formatMoney(0)}<span className="text-sm font-normal text-gray-400 ml-0.5">元</span>
+              <div className="text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight">
+                {stats.funFacts.maxSingleLoss ? formatMoney(-Math.abs(stats.funFacts.maxSingleLoss.amount)) : formatMoney(0)}<span className="text-base md:text-sm xl:text-base font-normal text-gray-400 ml-0.5">元</span>
               </div>
               {stats.funFacts.maxSingleLoss && (
-                <div className="text-sm font-medium text-gray-600 truncate max-w-[80px]" title={stats.funFacts.maxSingleLoss.name}>
+                <div className="text-base md:text-sm xl:text-base font-medium text-gray-600 truncate max-w-[80px]" title={stats.funFacts.maxSingleLoss.name}>
                   {stats.funFacts.maxSingleLoss.name}
                 </div>
               )}
@@ -259,11 +259,11 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Zap size={16} className="text-emerald-500" /> 搭子最痛
             </div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.funFacts.maxSingleWin ? formatMoney(stats.funFacts.maxSingleWin.amount, true) : formatMoney(0)}<span className="text-sm font-normal text-gray-400 ml-0.5">元</span>
+              <div className="text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight">
+                {stats.funFacts.maxSingleWin ? formatMoney(stats.funFacts.maxSingleWin.amount, true) : formatMoney(0)}<span className="text-base md:text-sm xl:text-base font-normal text-gray-400 ml-0.5">元</span>
               </div>
               {stats.funFacts.maxSingleWin && (
-                <div className="text-sm font-medium text-gray-600 truncate max-w-[80px]" title={stats.funFacts.maxSingleWin.name}>
+                <div className="text-base md:text-sm xl:text-base font-medium text-gray-600 truncate max-w-[80px]" title={stats.funFacts.maxSingleWin.name}>
                   {stats.funFacts.maxSingleWin.name}
                 </div>
               )}
@@ -280,8 +280,8 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               <Award size={16} className="text-emerald-500" /> 单局最高
             </div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-gray-900 group relative cursor-help">
-                {stats.funFacts.maxRoundWin ? formatMoney(stats.funFacts.maxRoundWin.winAmount, true) : formatMoney(0)}<span className="text-sm font-normal text-gray-400 ml-0.5">元</span>
+              <div className="text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight group relative cursor-help">
+                {stats.funFacts.maxRoundWin ? formatMoney(stats.funFacts.maxRoundWin.winAmount, true) : formatMoney(0)}<span className="text-base md:text-sm xl:text-base font-normal text-gray-400 ml-0.5">元</span>
                 {stats.funFacts.maxRoundWin && (
                   <div className="hidden group-hover:block absolute right-0 sm:left-0 top-full pt-2 w-64 z-50">
                     <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left font-normal">
