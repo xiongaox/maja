@@ -161,7 +161,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
             {stats.funFacts.maxWinStreak.count > 0 && (
               <div className="text-[11px] text-gray-400 mt-1">
                 {stats.funFacts.maxWinStreak.startDate === stats.funFacts.maxWinStreak.endDate 
-                  ? stats.funFacts.maxWinStreak.startDate 
+                  ? stats.funFacts.maxWinStreak.startDate.substring(5)
                   : `${stats.funFacts.maxWinStreak.startDate.substring(5)} ~ ${stats.funFacts.maxWinStreak.endDate.substring(5)}`}
               </div>
             )}
@@ -198,7 +198,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
             {stats.funFacts.maxLossStreak.count > 0 && (
               <div className="text-[11px] text-gray-400 mt-1">
                 {stats.funFacts.maxLossStreak.startDate === stats.funFacts.maxLossStreak.endDate 
-                  ? stats.funFacts.maxLossStreak.startDate 
+                  ? stats.funFacts.maxLossStreak.startDate.substring(5)
                   : `${stats.funFacts.maxLossStreak.startDate.substring(5)} ~ ${stats.funFacts.maxLossStreak.endDate.substring(5)}`}
               </div>
             )}
@@ -236,7 +236,66 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
           {stats.funFacts.maxSingleLoss ? (
             <div className="text-right">
               <div className="text-sm text-gray-900 font-medium truncate max-w-[100px]" title={stats.funFacts.maxSingleLoss.name}>{stats.funFacts.maxSingleLoss.name}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{stats.funFacts.maxSingleLoss.date.split(' ')[0]}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{stats.funFacts.maxSingleLoss.date.substring(5, 16)}</div>
+            </div>
+          ) : (
+            <div className="text-right">
+              <div className="text-sm text-gray-400">暂无记录</div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
+              <Zap size={16} className="text-emerald-500" /> 让搭子最痛
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{stats.funFacts.maxSingleWin ? formatMoney(stats.funFacts.maxSingleWin.amount, true) : formatMoney(0)}</div>
+          </div>
+          {stats.funFacts.maxSingleWin ? (
+            <div className="text-right">
+              <div className="text-sm text-gray-900 font-medium truncate max-w-[100px]" title={stats.funFacts.maxSingleWin.name}>{stats.funFacts.maxSingleWin.name}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{stats.funFacts.maxSingleWin.date.substring(5, 16)}</div>
+            </div>
+          ) : (
+            <div className="text-right">
+              <div className="text-sm text-gray-400">暂无记录</div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1 text-gray-500 font-medium text-sm">
+              <Award size={16} className="text-emerald-500" /> 赢得最多的一局
+            </div>
+            <div className="text-2xl font-bold text-gray-900 group relative cursor-help">
+              {stats.funFacts.maxRoundWin ? formatMoney(stats.funFacts.maxRoundWin.winAmount, true) : formatMoney(0)}
+              {stats.funFacts.maxRoundWin && (
+                <div className="hidden group-hover:block absolute left-0 top-full pt-2 w-64 z-50">
+                  <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left">
+                    <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxRoundWin.txs.length}笔)：</div>
+                    <div className="max-h-56 overflow-y-auto pr-2 space-y-1.5 custom-scrollbar">
+                      {stats.funFacts.maxRoundWin.txs.map(t => (
+                        <div key={t.id} className="flex justify-between items-center">
+                          <span className="text-gray-400"><span className="text-gray-200">{t.displayName || t.name}</span></span>
+                          <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
+                            {formatMoney(t.amount, true)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {stats.funFacts.maxRoundWin ? (
+            <div className="text-right">
+              <div className="text-xs text-gray-400">{stats.funFacts.maxRoundWin.date.substring(5, 16)}</div>
+              {stats.funFacts.maxRoundWin.lossAmount < 0 && (
+                <div className="text-xs text-rose-500 mt-1 font-medium">同时付出 {formatMoney(stats.funFacts.maxRoundWin.lossAmount)}</div>
+              )}
             </div>
           ) : (
             <div className="text-right">

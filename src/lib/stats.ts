@@ -106,7 +106,7 @@ export function calculateStats(transactions: Transaction[]): Stats {
   let currentLossStreak = { count: 0, amount: 0, startDate: '', endDate: '', txs: [] as Transaction[] };
 
   rounds.forEach(round => {
-    const roundDate = round.txs[0].date.split(' ')[0]; // 取那一局第一笔账单的日期
+    const roundDate = round.txs[0].date.substring(0, 16); // 取那一局第一笔账单的日期，精确到分钟
 
     if (round.net > 0) {
       if (currentWinStreak.count === 0) currentWinStreak.startDate = roundDate;
@@ -145,12 +145,39 @@ export function calculateStats(transactions: Transaction[]): Stats {
     }
   });
 
-  // 单笔最痛保持不变（查找金额最小的单笔支出）
+  // 单笔最痛、单笔最大赢取
   let maxSingleLoss: { amount: number; date: string; name: string } | null = null;
+  let maxSingleWin: { amount: number; date: string; name: string } | null = null;
+  
   sortedTx.forEach(t => {
     if (t.amount < 0) {
       if (!maxSingleLoss || t.amount < maxSingleLoss.amount) {
-        maxSingleLoss = { amount: t.amount, date: t.date, name: t.displayName || t.name };
+        maxSingleLoss = { amount: t.amount, date: t.date.substring(0, 16), name: t.displayName || t.name };
+      }
+    } else if (t.amount > 0) {
+      if (!maxSingleWin || t.amount > maxSingleWin.amount) {
+        maxSingleWin = { amount: t.amount, date: t.date.substring(0, 16), name: t.displayName || t.name };
+      }
+    }
+  });
+
+  // 赢得最多的一局 (maxRoundWin)
+  let maxRoundWin: { winAmount: number; lossAmount: number; date: string; txs: Transaction[] } | null = null;
+  rounds.forEach(round => {
+    const winTxs = round.txs.filter(t => t.amount > 0);
+    const lossTxs = round.txs.filter(t => t.amount < 0);
+    
+    const winAmount = winTxs.reduce((sum, t) => sum + t.amount, 0);
+    const lossAmount = lossTxs.reduce((sum, t) => sum + t.amount, 0); // 负数
+    
+    if (winAmount > 0) {
+      if (!maxRoundWin || winAmount > maxRoundWin.winAmount) {
+        maxRoundWin = {
+          winAmount,
+          lossAmount,
+          date: round.txs[0].date.substring(0, 16),
+          txs: round.txs
+        };
       }
     }
   });
@@ -168,7 +195,7 @@ export function calculateStats(transactions: Transaction[]): Stats {
     latestDayLabel,
     latestDayDisplayDate,
     isActuallyToday,
-    funFacts: { maxWinStreak, maxLossStreak, maxSingleLoss },
+    funFacts: { maxWinStreak, maxLossStreak, maxSingleLoss, maxSingleWin, maxRoundWin },
   };
 }
 
