@@ -171,13 +171,13 @@ export function SystemSettingsModal({
                 <span className="flex items-center gap-2"><Trash2 size={14} /> 危险操作区</span>
                 <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
               </summary>
-              <div className="pt-4 space-y-3 animate-in fade-in slide-in-from-top-1">
-                <button onClick={() => { onClearConfig(); onClose(); }} className="w-full py-2.5 text-sm bg-white text-rose-400 font-medium rounded-xl hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center gap-2 border border-rose-100 transition-colors">
-                  <Trash2 size={14} /> 初始化并清空所有配置
+              <div className="pt-4 flex gap-3 animate-in fade-in slide-in-from-top-1">
+                <button onClick={() => { onClearConfig(); onClose(); }} className="flex-1 py-2.5 text-xs bg-white text-rose-400 font-medium rounded-xl hover:bg-rose-50 hover:text-rose-600 flex flex-col sm:flex-row items-center justify-center gap-1.5 border border-rose-100 transition-colors">
+                  <Trash2 size={14} /> 清空所有配置
                 </button>
                 {transactionsLength > 0 && (
-                  <button onClick={() => { onClearData(); onClose(); }} className="w-full py-2.5 text-sm bg-rose-50 text-rose-500 font-bold rounded-xl hover:bg-rose-600 hover:text-white flex items-center justify-center gap-2 border border-rose-100 hover:border-rose-600 transition-all">
-                    <Trash2 size={14} /> 清空所有交易数据 ({transactionsLength} 条)
+                  <button onClick={() => { onClearData(); onClose(); }} className="flex-1 py-2.5 text-xs bg-rose-50 text-rose-500 font-bold rounded-xl hover:bg-rose-600 hover:text-white flex flex-col sm:flex-row items-center justify-center gap-1.5 border border-rose-100 hover:border-rose-600 transition-all">
+                    <Trash2 size={14} /> 清空交易数据
                   </button>
                 )}
               </div>
