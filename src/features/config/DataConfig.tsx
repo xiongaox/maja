@@ -451,31 +451,21 @@ export function DataConfig({
         {/* ── 收付款白名单 ── */}
         {activeTab === 'whitelist' && (
           <div className="p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+            
             <div className="flex flex-col sm:flex-row gap-3">
-              <input value={newName} onChange={e => setNewName(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleAddWhitelist()}
-                placeholder="输入名称添加..."
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow" />
-              <div className="flex gap-2">
-                <button onClick={handleAddWhitelist} disabled={!newName.trim()}
-                  className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors flex items-center justify-center font-medium">
-                  添加
-                </button>
-                {whitelist.length > 0 && (
-                  <button onClick={() => { if (window.confirm('确定要清空所有白名单吗？')) onClearWhitelist(); }}
-                    className="px-4 py-2.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors text-sm font-medium whitespace-nowrap flex items-center gap-1.5">
-                    <Trash2 size={16} />
-                    清空
-                  </button>
-                )}
+              <div className="relative flex-1">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="搜索已添加的白名单..."
+                  className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" />
               </div>
-            </div>
-
-            <div className="relative">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                placeholder="搜索已添加的白名单..."
-                className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" />
+              {whitelist.length > 0 && (
+                <button onClick={() => { if (window.confirm('确定要清空所有白名单吗？')) onClearWhitelist(); }}
+                  className="px-6 py-2.5 bg-rose-50 border border-rose-100 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors text-sm font-medium whitespace-nowrap flex items-center justify-center gap-1.5">
+                  <Trash2 size={16} />
+                  清空
+                </button>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2.5 min-h-[60px] p-4 bg-gray-50/50 rounded-xl border border-gray-100">
@@ -500,34 +490,52 @@ export function DataConfig({
                 ))
               ) : (
                 <div className="w-full text-center py-4 text-gray-400 text-sm">
-                  {searchTerm ? '未找到匹配项' : '暂无白名单，请添加你需要统计的搭子'}
+                  {searchTerm ? '未找到匹配项' : '暂无白名单，请从下方推荐中添加'}
                 </div>
               )}
             </div>
 
-            {suggestedNames.length > 0 && !searchTerm && (
-              <div className="pt-5 mt-2 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                    <span className="text-emerald-500">✨</span> 账单中发现的常用收付款方推荐
-                  </span>
-                  {suggestedNames.length > 20 && (
-                    <button onClick={() => setShowAllSuggestions(!showAllSuggestions)}
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                      {showAllSuggestions ? '收起' : `展开全部 ${suggestedNames.length} 个`}
-                    </button>
+            {suggestedNames.length > 0 && !searchTerm && (() => {
+              const filteredSuggestions = suggestedNames.filter(name => name.toLowerCase().includes(newName.toLowerCase()));
+              return (
+                <div className="pt-5 mt-2 border-t border-gray-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                    <span className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                      <span className="text-emerald-500">✨</span> 账单中发现的常用收付款方推荐
+                    </span>
+                    <div className="relative w-full sm:w-64">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        value={newName} 
+                        onChange={e => setNewName(e.target.value)}
+                        placeholder="搜索账单中的名字..."
+                        className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all" 
+                      />
+                    </div>
+                  </div>
+                  {filteredSuggestions.length > 20 && (
+                    <div className="flex justify-end mb-3">
+                      <button onClick={() => setShowAllSuggestions(!showAllSuggestions)}
+                        className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                        {showAllSuggestions ? '收起' : `展开全部 ${filteredSuggestions.length} 个`}
+                      </button>
+                    </div>
                   )}
+                  <div className="flex flex-wrap gap-2">
+                    {filteredSuggestions.length > 0 ? (
+                      (showAllSuggestions ? filteredSuggestions : filteredSuggestions.slice(0, 20)).map(name => (
+                        <button key={name} onClick={() => onAddWhitelist(name)}
+                          className="bg-white hover:bg-emerald-50 text-gray-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg text-sm border border-gray-200 hover:border-emerald-300 transition-all shadow-sm">
+                          + {name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="text-gray-400 text-sm py-2">没有找到匹配的名字</div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {(showAllSuggestions ? suggestedNames : suggestedNames.slice(0, 20)).map(name => (
-                    <button key={name} onClick={() => onAddWhitelist(name)}
-                      className="bg-white hover:bg-emerald-50 text-gray-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg text-sm border border-gray-200 hover:border-emerald-300 transition-all shadow-sm">
-                      + {name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
       </div>
