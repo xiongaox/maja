@@ -14,12 +14,11 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
   const winners = players.filter(p => p.net >= 0).sort((a, b) => b.net - a.net);
   const losers = players.filter(p => p.net < 0).sort((a, b) => a.net - b.net); // 最亏的在前面（绝对值大）
 
-  const maxFlow = Math.max(...players.map(p => p.win + p.loss), 1);
-
   const renderPlayerCard = (player: any, isWinner: boolean) => {
-    // 改为以全局最大流水为基准，这样所有人红绿条的物理长度就具有了绝对的可比性
-    const winPct = (player.win / maxFlow) * 100;
-    const lossPct = (player.loss / maxFlow) * 100;
+    // 恢复为 100% 撑满宽度，展示自身赢亏比例
+    const totalFlow = player.win + player.loss || 1;
+    const winPct = (player.win / totalFlow) * 100;
+    const lossPct = (player.loss / totalFlow) * 100;
 
     return (
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
