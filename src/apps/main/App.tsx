@@ -532,7 +532,7 @@ export default function MahjongTracker() {
     } finally {
       event.target.value = '';
     }
-  }, []);
+  }, [syncConfig]);
 
   // 清空配置
   const handleClearConfig = useCallback(() => {
@@ -543,7 +543,7 @@ export default function MahjongTracker() {
       syncConfig({ whitelist: [], mergeRules: [], filterOptions: DEFAULT_FILTER_OPTIONS });
       setSuccessMsg('配置已清空');
     }
-  }, []);
+  }, [syncConfig]);
 
   // 导出用户数据 (白名单过滤后的纯净数据)
   const handleExportUserData = useCallback(() => {
@@ -628,7 +628,7 @@ export default function MahjongTracker() {
     } finally {
       event.target.value = '';
     }
-  }, []);
+  }, [syncConfig, syncTransactions]);
 
   // 自动清除消息
   useEffect(() => {
