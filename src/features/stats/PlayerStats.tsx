@@ -82,14 +82,9 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
 
         {/* PC 端数据汇总 */}
         <div className="hidden md:flex items-center gap-6 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
-              <BarChart2 size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总交易笔数</p>
-              <p className="text-xl font-black text-gray-800">{normalizedTransactions.length}</p>
-            </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">总交易笔数</p>
+            <p className="text-xl font-black text-gray-800">{normalizedTransactions.length}</p>
           </div>
           <div className="h-10 w-px bg-gray-100" />
           <div>
