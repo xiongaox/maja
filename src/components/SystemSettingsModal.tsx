@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Cloud, Download, Upload, Trash2, Copy, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Cloud, Download, Upload, Trash2, Copy, Check, ChevronDown, FileJson, Database, Shield } from 'lucide-react';
 
 interface SystemSettingsModalProps {
   isOpen: boolean;
@@ -7,10 +7,9 @@ interface SystemSettingsModalProps {
   spaceId: string;
   transactionsLength: number;
   onExportConfig: () => void;
-  onImportConfig: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onExportUserData: () => void;
   onExportFull: () => void;
-  onImportBackup: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSmartImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearConfig: () => void;
   onClearData: () => void;
   onForceSync: () => void;
@@ -18,9 +17,21 @@ interface SystemSettingsModalProps {
 
 export function SystemSettingsModal({
   isOpen, onClose, spaceId, transactionsLength,
-  onExportConfig, onImportConfig, onExportUserData, onExportFull, onImportBackup, onClearConfig, onClearData, onForceSync
+  onExportConfig, onExportUserData, onExportFull, onSmartImport, onClearConfig, onClearData, onForceSync
 }: SystemSettingsModalProps) {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setExportOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -43,7 +54,7 @@ export function SystemSettingsModal({
           </button>
         </div>
         
-        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-6 overflow-y-auto flex-1 space-y-7">
           {/* 共享链接 */}
           <div>
             <h4 className="text-sm font-bold text-slate-700 mb-2">当前空间专属链接</h4>
@@ -75,7 +86,7 @@ export function SystemSettingsModal({
             <p className="text-xs text-slate-500 mb-4">如果您担心网络问题导致配置未保存，可点击下方按钮强制将当前所有数据上传至云端。</p>
             <button 
               onClick={() => { onForceSync(); onClose(); }} 
-              className="w-full py-2.5 text-sm bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-sm transition-colors"
+              className="w-full py-3 text-sm bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 flex items-center justify-center gap-2 shadow-sm transition-colors"
             >
               <Cloud size={16} /> 确认上传全部数据与配置
             </button>
@@ -83,62 +94,94 @@ export function SystemSettingsModal({
 
           <div className="h-px bg-slate-100 w-full" />
 
-          {/* 本地手动备份 (可选) */}
+          {/* 智能备份与恢复 */}
           <div>
-            <h4 className="text-sm font-bold text-slate-700 mb-3">本地手动备份 (可选)</h4>
-            <p className="text-xs text-slate-500 mb-4">若需转移或保存快照，可使用以下功能。</p>
+            <h4 className="text-sm font-bold text-slate-700 mb-3">数据备份与恢复</h4>
+            <p className="text-xs text-slate-500 mb-4">智能识别您上传的文件类型，自动完成配置或数据的恢复。</p>
             
-            <div className="space-y-3">
-              {/* 1. 配置备份 */}
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={onExportConfig} className="py-2.5 text-sm bg-slate-50 text-slate-600 font-medium rounded-xl hover:bg-slate-100 flex items-center justify-center gap-2 border border-slate-100">
-                  <Download size={14} /> 导出配置
+            <div className="grid grid-cols-2 gap-3">
+              {/* 导出下拉菜单 */}
+              <div className="relative" ref={dropdownRef}>
+                <button 
+                  onClick={() => setExportOpen(!exportOpen)}
+                  className="w-full py-3 text-sm bg-slate-50 text-slate-700 font-bold rounded-xl hover:bg-slate-100 flex items-center justify-center gap-2 border border-slate-200 transition-colors"
+                >
+                  <Download size={16} /> 导出备份 <ChevronDown size={14} className={`transition-transform duration-200 ${exportOpen ? 'rotate-180' : ''}`} />
                 </button>
-                <label className="py-2.5 text-sm bg-slate-50 text-slate-600 font-medium rounded-xl hover:bg-slate-100 flex items-center justify-center gap-2 cursor-pointer border border-slate-100">
-                  <Upload size={14} /> 导入配置
-                  <input type="file" accept=".json" onChange={(e) => { onImportConfig(e); onClose(); }} className="hidden" />
-                </label>
+                
+                {exportOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden z-10 animate-in fade-in slide-in-from-top-2">
+                    <button 
+                      onClick={() => { onExportConfig(); setExportOpen(false); }}
+                      className="w-full px-4 py-3 text-sm text-left flex items-center gap-3 hover:bg-slate-50 transition-colors border-b border-slate-50"
+                    >
+                      <div className="p-1.5 bg-slate-100 text-slate-500 rounded-lg"><FileJson size={14} /></div>
+                      <div>
+                        <div className="font-bold text-slate-700">仅导出配置</div>
+                        <div className="text-[10px] text-slate-400">白名单、合并规则等设置</div>
+                      </div>
+                    </button>
+                    <button 
+                      onClick={() => { onExportUserData(); setExportOpen(false); }}
+                      className="w-full px-4 py-3 text-sm text-left flex items-center gap-3 hover:bg-slate-50 transition-colors border-b border-slate-50"
+                    >
+                      <div className="p-1.5 bg-blue-100 text-blue-500 rounded-lg"><Shield size={14} /></div>
+                      <div>
+                        <div className="font-bold text-slate-700">导出用户数据</div>
+                        <div className="text-[10px] text-slate-400">含配置及白名单过滤后的数据</div>
+                      </div>
+                    </button>
+                    <button 
+                      onClick={() => { onExportFull(); setExportOpen(false); }}
+                      className="w-full px-4 py-3 text-sm text-left flex items-center gap-3 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="p-1.5 bg-emerald-100 text-emerald-500 rounded-lg"><Database size={14} /></div>
+                      <div>
+                        <div className="font-bold text-slate-700">导出完整备份</div>
+                        <div className="text-[10px] text-slate-400">含底层全部流水与配置</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* 2. 用户数据备份 */}
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={onExportUserData} className="py-2.5 text-sm bg-blue-50 text-blue-600 font-medium rounded-xl hover:bg-blue-100 flex items-center justify-center gap-2 border border-blue-100">
-                  <Download size={14} /> 导出用户数据
-                </button>
-                <label className="py-2.5 text-sm bg-blue-50 text-blue-600 font-medium rounded-xl hover:bg-blue-100 flex items-center justify-center gap-2 cursor-pointer border border-blue-100">
-                  <Upload size={14} /> 恢复用户数据
-                  <input type="file" accept=".json" onChange={(e) => { onImportBackup(e); onClose(); }} className="hidden" />
-                </label>
-              </div>
-
-              {/* 3. 完整数据备份 */}
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={onExportFull} className="py-2.5 text-sm bg-emerald-50 text-emerald-600 font-medium rounded-xl hover:bg-emerald-100 flex items-center justify-center gap-2 border border-emerald-100">
-                  <Download size={14} /> 导出完整备份
-                </button>
-                <label className="py-2.5 text-sm bg-emerald-50 text-emerald-600 font-medium rounded-xl hover:bg-emerald-100 flex items-center justify-center gap-2 cursor-pointer border border-emerald-100">
-                  <Upload size={14} /> 恢复完整备份
-                  <input type="file" accept=".json" onChange={(e) => { onImportBackup(e); onClose(); }} className="hidden" />
-                </label>
-              </div>
+              {/* 智能导入按钮 */}
+              <label className="w-full py-3 text-sm bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-colors group">
+                <Upload size={16} className="group-hover:-translate-y-0.5 transition-transform" /> 
+                <span>智能恢复备份</span>
+                <input 
+                  type="file" 
+                  accept=".json" 
+                  onChange={(e) => { 
+                    onSmartImport(e); 
+                    onClose(); 
+                  }} 
+                  className="hidden" 
+                />
+              </label>
             </div>
           </div>
 
           <div className="h-px bg-slate-100 w-full" />
 
-          {/* 危险区 */}
-          <div>
-            <h4 className="text-sm font-bold text-rose-600 mb-3">危险操作区</h4>
-            <div className="space-y-3">
-              <button onClick={() => { onClearConfig(); onClose(); }} className="w-full py-2.5 text-sm bg-rose-50 text-rose-600 font-medium rounded-xl hover:bg-rose-100 flex items-center justify-center gap-2 border border-rose-100">
-                <Trash2 size={14} /> 初始化并清空所有配置
-              </button>
-              {transactionsLength > 0 && (
-                <button onClick={() => { onClearData(); onClose(); }} className="w-full py-2.5 text-sm bg-rose-50 text-rose-600 font-bold rounded-xl hover:bg-rose-100 flex items-center justify-center gap-2 border border-rose-100">
-                  <Trash2 size={14} /> 清空所有交易数据 ({transactionsLength} 条)
+          {/* 危险区 (采用折叠式或幽灵按钮样式降噪) */}
+          <div className="pt-2">
+            <details className="group">
+              <summary className="text-sm font-bold text-slate-400 hover:text-rose-500 cursor-pointer list-none flex items-center justify-between transition-colors">
+                <span className="flex items-center gap-2"><Trash2 size={14} /> 危险操作区</span>
+                <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
+              </summary>
+              <div className="pt-4 space-y-3 animate-in fade-in slide-in-from-top-1">
+                <button onClick={() => { onClearConfig(); onClose(); }} className="w-full py-2.5 text-sm bg-white text-rose-400 font-medium rounded-xl hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center gap-2 border border-rose-100 transition-colors">
+                  <Trash2 size={14} /> 初始化并清空所有配置
                 </button>
-              )}
-            </div>
+                {transactionsLength > 0 && (
+                  <button onClick={() => { onClearData(); onClose(); }} className="w-full py-2.5 text-sm bg-rose-50 text-rose-500 font-bold rounded-xl hover:bg-rose-600 hover:text-white flex items-center justify-center gap-2 border border-rose-100 hover:border-rose-600 transition-all">
+                    <Trash2 size={14} /> 清空所有交易数据 ({transactionsLength} 条)
+                  </button>
+                )}
+              </div>
+            </details>
           </div>
         </div>
       </div>

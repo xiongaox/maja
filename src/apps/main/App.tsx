@@ -484,6 +484,7 @@ export default function MahjongTracker() {
   const handleExportConfig = useCallback(() => {
     const config = {
       version: '1.0',
+      type: 'config_backup',
       exportDate: new Date().toISOString(),
       whitelist,
       mergeRules,
@@ -503,36 +504,57 @@ export default function MahjongTracker() {
     setSuccessMsg('配置已导出！');
   }, [whitelist, mergeRules, filterOptions]);
 
-  // 导入配置
-  const handleImportConfig = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // 智能导入数据 (自动识别 配置 / 完整备份 / 用户数据)
+  const handleSmartImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
       const text = await file.text();
-      const config = JSON.parse(text);
+      const backup = JSON.parse(text);
       
-      if (!config.version || !config.whitelist || !config.mergeRules) {
-        setErrorMsg('配置文件格式不正确');
+      // 兼容老版本没有 type 字段的配置备份
+      const isConfigOnly = backup.type === 'config_backup' || (!backup.transactions && backup.whitelist && backup.mergeRules);
+      const isDataBackup = ['full_backup', 'user_data_backup'].includes(backup.type);
+
+      if (!backup.version || (!isConfigOnly && !isDataBackup)) {
+        setErrorMsg('不是有效的数据备份文件，请检查文件格式。');
         return;
       }
 
-      if (config.filterOptions) {
-        setFilterOptions(config.filterOptions);
+      if (isConfigOnly) {
+        setWhitelist(backup.whitelist || []);
+        setMergeRules(backup.mergeRules || []);
+        if (backup.filterOptions) {
+          setFilterOptions(backup.filterOptions);
+        }
+        const newFilterOptions = backup.filterOptions || DEFAULT_FILTER_OPTIONS;
+        syncConfig({ whitelist: backup.whitelist || [], mergeRules: backup.mergeRules || [], filterOptions: newFilterOptions });
+        setSuccessMsg('配置已成功导入！');
+        return;
       }
-      setWhitelist(config.whitelist);
-      setMergeRules(config.mergeRules);
-      
-      const newFilterOptions = config.filterOptions || DEFAULT_FILTER_OPTIONS;
-      syncConfig({ whitelist: config.whitelist, mergeRules: config.mergeRules, filterOptions: newFilterOptions });
 
-      setSuccessMsg('配置已导入！');
+      // 数据备份恢复逻辑
+      if (confirm(`检测到 ${backup.type === 'full_backup' ? '完整备份' : '用户数据备份'}。\n即将恢复 ${backup.transactions.length} 条底层交易记录并覆盖现有配置，确定吗？此操作将清空当前所有数据。`)) {
+        setWhitelist(backup.whitelist || []);
+        setMergeRules(backup.mergeRules || []);
+        if (backup.filterOptions) {
+          setFilterOptions(backup.filterOptions);
+        }
+        
+        const newFilterOptions = backup.filterOptions || DEFAULT_FILTER_OPTIONS;
+        syncConfig({ whitelist: backup.whitelist || [], mergeRules: backup.mergeRules || [], filterOptions: newFilterOptions });
+        syncTransactions(backup.transactions);
+        
+        const msg = backup.type === 'full_backup' ? '完整数据恢复成功！' : '用户数据恢复成功！';
+        setSuccessMsg(msg);
+      }
     } catch (err: any) {
-      setErrorMsg('导入失败：' + err.message);
+      setErrorMsg('恢复失败：' + err.message);
     } finally {
       event.target.value = '';
     }
-  }, [syncConfig]);
+  }, [syncConfig, syncTransactions]);
 
   // 清空配置
   const handleClearConfig = useCallback(() => {
@@ -595,40 +617,7 @@ export default function MahjongTracker() {
     setSuccessMsg('完整备份已导出！');
   }, [whitelist, mergeRules, filterOptions, transactions]);
 
-  // 导入数据备份 (支持完整备份与用户数据备份)
-  const handleImportBackup = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
 
-    try {
-      const text = await file.text();
-      const backup = JSON.parse(text);
-      
-      if (!backup.version || !['full_backup', 'user_data_backup'].includes(backup.type) || !backup.transactions) {
-        setErrorMsg('不是有效的数据备份文件，请检查文件格式。');
-        return;
-      }
-
-      if (confirm(`即将恢复 ${backup.transactions.length} 条底层交易记录并覆盖现有配置，确定吗？此操作将清空当前所有数据。`)) {
-        setWhitelist(backup.whitelist || []);
-        setMergeRules(backup.mergeRules || []);
-        if (backup.filterOptions) {
-          setFilterOptions(backup.filterOptions);
-        }
-        
-        const newFilterOptions = backup.filterOptions || DEFAULT_FILTER_OPTIONS;
-        syncConfig({ whitelist: backup.whitelist || [], mergeRules: backup.mergeRules || [], filterOptions: newFilterOptions });
-        syncTransactions(backup.transactions);
-        
-        const msg = backup.type === 'full_backup' ? '完整数据恢复成功！' : '用户数据恢复成功！';
-        setSuccessMsg(msg);
-      }
-    } catch (err: any) {
-      setErrorMsg('恢复失败：' + err.message);
-    } finally {
-      event.target.value = '';
-    }
-  }, [syncConfig, syncTransactions]);
 
   // 自动清除消息
   useEffect(() => {
@@ -826,10 +815,9 @@ export default function MahjongTracker() {
         spaceId={spaceId || ''}
         transactionsLength={transactions.length}
         onExportConfig={handleExportConfig}
-        onImportConfig={handleImportConfig}
         onExportUserData={handleExportUserData}
         onExportFull={handleExportFull}
-        onImportBackup={handleImportBackup}
+        onSmartImport={handleSmartImport}
         onClearConfig={handleClearConfig}
         onClearData={() => {
           if (confirm(`确定要清空所有 ${transactions.length} 条交易数据吗？此操作不可撤销。`)) {
