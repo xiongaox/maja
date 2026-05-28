@@ -183,7 +183,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               )}
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-50 text-sm md:text-xs text-gray-400">
             {stats.funFacts.maxWinStreak.count > 0 ? (
               stats.funFacts.maxWinStreak.startDate === stats.funFacts.maxWinStreak.endDate 
                 ? stats.funFacts.maxWinStreak.startDate.substring(5)
@@ -223,7 +223,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               )}
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-50 text-sm md:text-xs text-gray-400">
             {stats.funFacts.maxLossStreak.count > 0 ? (
               stats.funFacts.maxLossStreak.startDate === stats.funFacts.maxLossStreak.endDate 
                 ? stats.funFacts.maxLossStreak.startDate.substring(5)
@@ -248,7 +248,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               )}
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-50 text-sm md:text-xs text-gray-400">
             {stats.funFacts.maxSingleLoss ? stats.funFacts.maxSingleLoss.date.substring(5, 16) : '暂无记录'}
           </div>
         </div>
@@ -269,7 +269,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               )}
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-50 text-sm md:text-xs text-gray-400">
             {stats.funFacts.maxSingleWin ? stats.funFacts.maxSingleWin.date.substring(5, 16) : '暂无记录'}
           </div>
         </div>
@@ -307,7 +307,7 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
               )}
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-50 text-[11px] text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-50 text-sm md:text-xs text-gray-400">
             {stats.funFacts.maxRoundWin ? stats.funFacts.maxRoundWin.date.substring(5, 16) : '暂无记录'}
           </div>
         </div>
