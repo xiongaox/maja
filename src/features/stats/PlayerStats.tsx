@@ -48,11 +48,11 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
               {formatMoney(player.net, isWinner)}
             </span>
             {latestTx && (
-              <div className="mt-1.5 flex items-center justify-end text-[10px]">
-                <span className="text-slate-400 mr-1 scale-[0.85] origin-right">
+              <div className="mt-1.5 flex items-center justify-end text-xs font-medium gap-1.5">
+                <span className="text-slate-400">
                   {new Date(latestTx.date).toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
                 </span>
-                <span className={latestTx.amount > 0 ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+                <span className={latestTx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'}>
                   {formatMoney(latestTx.amount, true)}
                 </span>
               </div>
