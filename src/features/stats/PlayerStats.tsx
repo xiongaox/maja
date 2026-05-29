@@ -14,6 +14,17 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
   const winners = players.filter(p => p.net >= 0).sort((a, b) => b.net - a.net);
   const losers = players.filter(p => p.net < 0).sort((a, b) => a.net - b.net); // 最亏的在前面（绝对值大）
 
+  // 找出所有账单中最新的一天
+  const globalLatestTime = normalizedTransactions.length > 0 
+    ? Math.max(...normalizedTransactions.map(t => new Date(t.date).getTime()))
+    : 0;
+  const globalLatestDate = globalLatestTime ? new Date(globalLatestTime) : null;
+  
+  const isSameDay = (d1: Date, d2: Date) => 
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
   const renderPlayerCard = (player: any, isWinner: boolean) => {
     // 恢复为 100% 撑满宽度，展示自身赢亏比例
     const totalFlow = player.win + player.loss || 1;
@@ -23,6 +34,8 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     const latestTx = normalizedTransactions
       .filter(t => (t.displayName || t.name) === player.name)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+
+    const showLatestTx = latestTx && globalLatestDate && isSameDay(new Date(latestTx.date), globalLatestDate);
 
     return (
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -47,7 +60,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             <span className={`text-xl font-black block leading-none ${isWinner ? 'text-amber-500' : 'text-gray-600'}`}>
               {formatMoney(player.net, isWinner)}
             </span>
-            {latestTx && (
+            {showLatestTx && (
               <div className="mt-1.5 flex items-center justify-end text-xs font-medium gap-1.5">
                 <span className="text-slate-400">
                   {new Date(latestTx.date).toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
