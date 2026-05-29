@@ -31,11 +31,13 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     const winPct = (player.win / totalFlow) * 100;
     const lossPct = (player.loss / totalFlow) * 100;
 
-    const latestTx = normalizedTransactions
-      .filter(t => (t.displayName || t.name) === player.name)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+    const playerTxsOnLatestDay = globalLatestDate ? normalizedTransactions.filter(t => 
+      (t.displayName || t.name) === player.name && 
+      isSameDay(new Date(t.date), globalLatestDate)
+    ) : [];
 
-    const showLatestTx = latestTx && globalLatestDate && isSameDay(new Date(latestTx.date), globalLatestDate);
+    const showLatestTx = playerTxsOnLatestDay.length > 0;
+    const latestDayAmount = playerTxsOnLatestDay.reduce((sum, t) => sum + t.amount, 0);
 
     return (
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -63,10 +65,10 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             {showLatestTx && (
               <div className="mt-1.5 flex items-center justify-end text-xs font-medium gap-1.5">
                 <span className="text-slate-400">
-                  {new Date(latestTx.date).toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
+                  {globalLatestDate!.toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
                 </span>
-                <span className={latestTx.amount > 0 ? 'text-emerald-500' : 'text-rose-500'}>
-                  {formatMoney(latestTx.amount, true)}
+                <span className={latestDayAmount > 0 ? 'text-emerald-500' : latestDayAmount < 0 ? 'text-rose-500' : 'text-gray-400'}>
+                  {formatMoney(latestDayAmount, true)}
                 </span>
               </div>
             )}
