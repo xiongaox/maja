@@ -41,23 +41,22 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
                 <span className="text-gray-300 text-[10px]">|</span>
                 <span className="text-rose-500">-{Math.round(player.loss)}</span>
               </p>
-              {latestTx && (
-                <div className="mt-1.5 flex items-center text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 w-fit">
-                  <span className="text-slate-500">最近：</span>
-                  <span className={latestTx.amount > 0 ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
-                    {formatMoney(latestTx.amount, true)}
-                  </span>
-                  <span className="text-slate-400 ml-1 scale-[0.85] origin-left">
-                    {new Date(latestTx.date).toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
           <div className="text-right">
             <span className={`text-xl font-black block leading-none ${isWinner ? 'text-amber-500' : 'text-gray-600'}`}>
               {formatMoney(player.net, isWinner)}
             </span>
+            {latestTx && (
+              <div className="mt-1.5 flex items-center justify-end text-[10px]">
+                <span className="text-slate-400 mr-1 scale-[0.85] origin-right">
+                  {new Date(latestTx.date).toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
+                </span>
+                <span className={latestTx.amount > 0 ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+                  {formatMoney(latestTx.amount, true)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
