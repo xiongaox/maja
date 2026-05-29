@@ -20,6 +20,10 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     const winPct = (player.win / totalFlow) * 100;
     const lossPct = (player.loss / totalFlow) * 100;
 
+    const latestTx = normalizedTransactions
+      .filter(t => (t.displayName || t.name) === player.name)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+
     return (
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
         <div className="flex items-start justify-between mb-3 relative z-10">
@@ -28,7 +32,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
               name={player.name} 
               gender={player.gender} 
               isWinner={isWinner}
-              className="w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-full shrink-0"
             />
             <div>
               <h4 className="font-bold text-gray-800 leading-tight">{player.name}</h4>
@@ -37,6 +41,17 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
                 <span className="text-gray-300 text-[10px]">|</span>
                 <span className="text-rose-500">-{Math.round(player.loss)}</span>
               </p>
+              {latestTx && (
+                <div className="mt-1.5 flex items-center text-[10px] bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 w-fit">
+                  <span className="text-slate-500">最近：</span>
+                  <span className={latestTx.amount > 0 ? 'text-emerald-500 font-bold' : 'text-rose-500 font-bold'}>
+                    {formatMoney(latestTx.amount, true)}
+                  </span>
+                  <span className="text-slate-400 ml-1 scale-[0.85] origin-left">
+                    {new Date(latestTx.date).toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="text-right">
