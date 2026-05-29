@@ -37,7 +37,8 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     ) : [];
 
     const showLatestTx = playerTxsOnLatestDay.length > 0;
-    const latestDayAmount = playerTxsOnLatestDay.reduce((sum, t) => sum + t.amount, 0);
+    const latestDayWin = playerTxsOnLatestDay.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+    const latestDayLoss = playerTxsOnLatestDay.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     return (
       <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -67,9 +68,12 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
                 <span className="text-slate-400">
                   {globalLatestDate!.toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
                 </span>
-                <span className={latestDayAmount > 0 ? 'text-emerald-500' : latestDayAmount < 0 ? 'text-rose-500' : 'text-gray-400'}>
-                  {formatMoney(latestDayAmount, true)}
-                </span>
+                <div className="flex items-center gap-1">
+                  {latestDayWin > 0 && <span className="text-emerald-500">+{Math.round(latestDayWin)}</span>}
+                  {latestDayWin > 0 && latestDayLoss > 0 && <span className="text-gray-300 text-[10px]">|</span>}
+                  {latestDayLoss > 0 && <span className="text-rose-500">-{Math.round(latestDayLoss)}</span>}
+                  {latestDayWin === 0 && latestDayLoss === 0 && <span className="text-gray-400">0</span>}
+                </div>
               </div>
             )}
           </div>
