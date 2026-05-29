@@ -72,10 +72,12 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
                 <span className={`font-bold ${latestDayAmount > 0 ? 'text-emerald-500' : latestDayAmount < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
                   {formatMoney(latestDayAmount, true)}
                 </span>
-                <div className="flex items-center gap-1 text-[10px] bg-slate-50 px-1 rounded border border-slate-100">
+                <div className="flex items-center gap-1 opacity-75">
+                  <span className="text-gray-400">(</span>
                   <span className="text-emerald-500">+{Math.round(latestDayWin)}</span>
                   <span className="text-gray-300">|</span>
                   <span className="text-rose-500">-{Math.round(latestDayLoss)}</span>
+                  <span className="text-gray-400">)</span>
                 </div>
               </div>
             )}
