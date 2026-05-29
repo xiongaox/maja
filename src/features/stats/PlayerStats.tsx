@@ -69,10 +69,9 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
                   {globalLatestDate!.toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
                 </span>
                 <div className="flex items-center gap-1">
-                  {latestDayWin > 0 && <span className="text-emerald-500">+{Math.round(latestDayWin)}</span>}
-                  {latestDayWin > 0 && latestDayLoss > 0 && <span className="text-gray-300 text-[10px]">|</span>}
-                  {latestDayLoss > 0 && <span className="text-rose-500">-{Math.round(latestDayLoss)}</span>}
-                  {latestDayWin === 0 && latestDayLoss === 0 && <span className="text-gray-400">0</span>}
+                  <span className="text-emerald-500">+{Math.round(latestDayWin)}</span>
+                  <span className="text-gray-300 text-[10px]">|</span>
+                  <span className="text-rose-500">-{Math.round(latestDayLoss)}</span>
                 </div>
               </div>
             )}
