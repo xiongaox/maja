@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, History, Trash2, AlertTriangle } from 'lucide-react';
-import type { Transaction } from '../../types';
+import type { Transaction, DailyStat } from '../../types';
 import { UserAvatar } from '../../components/UserAvatar';
 import { formatMoney } from '../../lib/format';
 
 interface CalendarViewProps {
-  dailyStats: Record<string, { net: number; win: number; loss: number; count: number; records: Transaction[] }>;
+  dailyStats: Record<string, DailyStat>;
   isAdmin?: boolean;
   onRemoveTransaction: (id: string) => void;
 }
@@ -169,7 +169,7 @@ export function CalendarView({ dailyStats, isAdmin, onRemoveTransaction }: Calen
       {selectedDay && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 animate-in slide-in-from-bottom-4">
           <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800">{selectedDay} 明细</h3>
+            <h3 className="text-lg font-bold text-gray-800">{dailyStats[selectedDay]?.label || selectedDay} 明细</h3>
             <div className="text-sm font-medium">
               当日净盈亏:
               <span className={`ml-2 text-lg font-bold ${dailyStats[selectedDay]?.net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>

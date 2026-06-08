@@ -156,6 +156,50 @@ export function applyWhitelist(
 }
 
 /**
+ * Step 4: 应用就近合并
+ * 将连续天数的交易归入第一天
+ */
+export function applyMergeAdjacentDays(
+  transactions: Transaction[],
+  enabled: boolean
+): Transaction[] {
+  if (!enabled) {
+    return transactions.map(t => ({ ...t, sessionDate: t.date.split(' ')[0] }));
+  }
+
+  const dates = [...new Set(transactions.map(t => t.date.split(' ')[0]))].sort();
+  const dateMap: Record<string, string> = {};
+  
+  if (dates.length > 0) {
+    let streakStart = dates[0];
+    dateMap[dates[0]] = streakStart;
+    
+    for (let i = 1; i < dates.length; i++) {
+      const current = dates[i];
+      const prev = dates[i - 1];
+      
+      const prevDate = new Date(prev);
+      const currentDate = new Date(current);
+      
+      const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      if (diffDays <= 1) {
+        dateMap[current] = streakStart;
+      } else {
+        streakStart = current;
+        dateMap[current] = streakStart;
+      }
+    }
+  }
+
+  return transactions.map(t => ({
+    ...t,
+    sessionDate: dateMap[t.date.split(' ')[0]] || t.date.split(' ')[0]
+  }));
+}
+
+/**
  * 完整数据管道
  */
 export function buildPipeline(

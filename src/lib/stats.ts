@@ -21,7 +21,7 @@ export function calculateStats(transactions: Transaction[]): Stats {
   let latestDateStr = todayStr;
   if (transactions.length > 0) {
     latestDateStr = transactions.reduce((max, t) => {
-      const d = t.date.split(' ')[0];
+      const d = t.sessionDate || t.date.split(' ')[0];
       return d > max ? d : max;
     }, '');
   }
@@ -30,7 +30,7 @@ export function calculateStats(transactions: Transaction[]): Stats {
   transactions.forEach(t => {
     if (t.amount > 0) totalWin += t.amount;
     if (t.amount < 0) totalLoss += Math.abs(t.amount);
-    if (t.date.split(' ')[0] === latestDateStr) latestDayNet += t.amount;
+    if ((t.sessionDate || t.date.split(' ')[0]) === latestDateStr) latestDayNet += t.amount;
 
     const displayName = t.displayName || t.name;
     if (!playerStats[displayName]) {
@@ -45,8 +45,16 @@ export function calculateStats(transactions: Transaction[]): Stats {
 
   const netProfit = totalWin - totalLoss;
   const isActuallyToday = latestDateStr === todayStr;
-  const latestDayLabel = isActuallyToday ? '今日盈亏' : '最近一日盈亏';
-  const latestDayDisplayDate = isActuallyToday ? '今天' : latestDateStr;
+  const latestDayLabel = isActuallyToday ? '今日盈亏' : '最近会话盈亏';
+  let latestDayDisplayDate = isActuallyToday ? '今天' : latestDateStr;
+
+  if (transactions.length > 0) {
+    const txsOnLatest = transactions.filter(t => (t.sessionDate || t.date.split(' ')[0]) === latestDateStr);
+    const dates = [...new Set(txsOnLatest.map(t => t.date.split(' ')[0]))].sort();
+    if (dates.length > 1) {
+      latestDayDisplayDate = `${dates[0]} 至 ${dates[dates.length - 1].substring(5)}`;
+    }
+  }
 
   let atm: string | null = null;
   let nemesis: string | null = null;
@@ -206,7 +214,7 @@ export function calculateDailyStats(transactions: Transaction[]): Record<string,
   const stats: Record<string, DailyStat> = {};
   
   transactions.forEach(t => {
-    const datePart = t.date.split(' ')[0];
+    const datePart = t.sessionDate || t.date.split(' ')[0];
     if (!stats[datePart]) {
       stats[datePart] = { net: 0, win: 0, loss: 0, count: 0, records: [] };
     }
@@ -217,5 +225,16 @@ export function calculateDailyStats(transactions: Transaction[]): Record<string,
     stats[datePart].records.push(t);
   });
   
+  Object.values(stats).forEach(stat => {
+    const dates = [...new Set(stat.records.map(t => t.date.split(' ')[0]))].sort();
+    if (dates.length > 1) {
+      const start = dates[0];
+      const end = dates[dates.length - 1];
+      stat.label = `${start} 至 ${end.substring(5)}`;
+    } else {
+      stat.label = dates[0];
+    }
+  });
+
   return stats;
 }

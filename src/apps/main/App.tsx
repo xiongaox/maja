@@ -18,7 +18,7 @@ import { LandingPage } from './LandingPage';
 import { EntryModal } from '../../components/EntryModal';
 import { SystemSettingsModal } from '../../components/SystemSettingsModal';
 import { getSpaceData, verifyPin } from '../../lib/api';
-import { buildPipeline, DEFAULT_FILTER_OPTIONS } from '../../lib/pipeline';
+import { buildPipeline, applyMergeAdjacentDays, DEFAULT_FILTER_OPTIONS } from '../../lib/pipeline';
 import { calculateStats, calculateDailyStats } from '../../lib/stats';
 import { parseBillFiles } from '../../lib/parser';
 import { useSpaceStore } from '../../store/useSpaceStore';
@@ -50,7 +50,16 @@ export default function MahjongTracker() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSystemModalOpen, setIsSystemModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [mergeAdjacentDays, setMergeAdjacentDays] = useState(() => {
+    return localStorage.getItem('maja_merge_adjacent') === 'true';
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleMergeAdjacent = () => {
+    const newState = !mergeAdjacentDays;
+    setMergeAdjacentDays(newState);
+    localStorage.setItem('maja_merge_adjacent', String(newState));
+  };
 
   // Zustand Store
   const {
@@ -108,14 +117,18 @@ export default function MahjongTracker() {
     return buildPipeline(transactions, mergeRules, filterOptions, whitelist);
   }, [transactions, mergeRules, filterOptions, whitelist]);
 
+  const finalTransactions = useMemo(() => {
+    return applyMergeAdjacentDays(pipelineResult.final, mergeAdjacentDays);
+  }, [pipelineResult.final, mergeAdjacentDays]);
+
   // 计算统计信息
   const stats = useMemo(() => {
-    return calculateStats(pipelineResult.final);
-  }, [pipelineResult.final]);
+    return calculateStats(finalTransactions);
+  }, [finalTransactions]);
 
   const dailyStats = useMemo(() => {
-    return calculateDailyStats(pipelineResult.final);
-  }, [pipelineResult.final]);
+    return calculateDailyStats(finalTransactions);
+  }, [finalTransactions]);
 
   // 获取建议的白名单名字（基于筛选后的数据）
   const suggestedNames = useMemo(() => {
@@ -257,7 +270,7 @@ export default function MahjongTracker() {
       version: '1.0',
       type: 'user_data_backup',
       exportDate: new Date().toISOString(),
-      transactions: pipelineResult.final, // 导出过滤和合并后的最终数据
+      transactions: finalTransactions, // 导出过滤和合并后的最终数据
       whitelist,
       mergeRules,
       filterOptions,
@@ -514,7 +527,7 @@ export default function MahjongTracker() {
           {activeTab === 'dashboard' && (
             <Dashboard
               stats={stats}
-              normalizedTransactions={pipelineResult.final}
+              normalizedTransactions={finalTransactions}
               dailyStats={dailyStats}
               onFileUpload={handleFileUpload}
               fileInputRef={fileInputRef}
@@ -527,7 +540,9 @@ export default function MahjongTracker() {
           {activeTab === 'stats' && (
             <PlayerStats
               stats={stats}
-              normalizedTransactions={pipelineResult.final}
+              normalizedTransactions={finalTransactions}
+              mergeAdjacentDays={mergeAdjacentDays}
+              onToggleMergeAdjacent={toggleMergeAdjacent}
             />
           )}
 

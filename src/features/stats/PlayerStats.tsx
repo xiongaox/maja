@@ -7,23 +7,32 @@ import { formatMoney } from '../../lib/format';
 interface PlayerStatsProps {
   stats: Stats;
   normalizedTransactions: Transaction[];
+  mergeAdjacentDays: boolean;
+  onToggleMergeAdjacent: () => void;
 }
 
-export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps) {
+export function PlayerStats({ stats, normalizedTransactions, mergeAdjacentDays, onToggleMergeAdjacent }: PlayerStatsProps) {
   const players = Object.values(stats.playerStats);
   const winners = players.filter(p => p.net >= 0).sort((a, b) => b.net - a.net);
   const losers = players.filter(p => p.net < 0).sort((a, b) => a.net - b.net); // 最亏的在前面（绝对值大）
 
-  // 找出所有账单中最新的一天
-  const globalLatestTime = normalizedTransactions.length > 0 
-    ? Math.max(...normalizedTransactions.map(t => new Date(t.date).getTime()))
-    : 0;
-  const globalLatestDate = globalLatestTime ? new Date(globalLatestTime) : null;
-  
-  const isSameDay = (d1: Date, d2: Date) => 
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate();
+  const latestSessionDate = normalizedTransactions.length > 0 
+    ? normalizedTransactions.reduce((max, t) => {
+        const sd = t.sessionDate || t.date.split(' ')[0];
+        return sd > max ? sd : max;
+      }, '')
+    : '';
+
+  const getDisplayDate = (d: string) => d.substring(5).replace(/-/g, '/');
+
+  let latestDisplayDate = latestSessionDate ? getDisplayDate(latestSessionDate) : '';
+  if (latestSessionDate) {
+    const txsInSession = normalizedTransactions.filter(t => (t.sessionDate || t.date.split(' ')[0]) === latestSessionDate);
+    const dates = [...new Set(txsInSession.map(t => t.date.split(' ')[0]))].sort();
+    if (dates.length > 1) {
+      latestDisplayDate = `${getDisplayDate(dates[0])} ~ ${getDisplayDate(dates[dates.length - 1])}`;
+    }
+  }
 
   const renderPlayerCard = (player: any, isWinner: boolean) => {
     // 恢复为 100% 撑满宽度，展示自身赢亏比例
@@ -31,9 +40,9 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     const winPct = (player.win / totalFlow) * 100;
     const lossPct = (player.loss / totalFlow) * 100;
 
-    const playerTxsOnLatestDay = globalLatestDate ? normalizedTransactions.filter(t => 
+    const playerTxsOnLatestDay = latestSessionDate ? normalizedTransactions.filter(t => 
       (t.displayName || t.name) === player.name && 
-      isSameDay(new Date(t.date), globalLatestDate)
+      (t.sessionDate || t.date.split(' ')[0]) === latestSessionDate
     ) : [];
 
     const showLatestTx = playerTxsOnLatestDay.length > 0;
@@ -42,7 +51,11 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     const latestDayLoss = playerTxsOnLatestDay.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
     return (
-      <div key={player.name} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+      <div 
+        key={player.name} 
+        onClick={onToggleMergeAdjacent}
+        className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden group cursor-pointer active:scale-[0.98]"
+      >
         <div className="flex items-start justify-between mb-3 relative z-10">
           <div className="flex items-center gap-3">
             <UserAvatar 
@@ -67,7 +80,7 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
             {showLatestTx && (
               <div className="mt-1.5 flex items-center justify-end text-xs font-medium gap-1.5">
                 <span className="text-slate-400">
-                  {globalLatestDate!.toLocaleDateString('zh-CN', {month: 'numeric', day: 'numeric'})}
+                  {latestDisplayDate}
                 </span>
                 <span className={`font-bold ${latestDayAmount > 0 ? 'text-emerald-500' : latestDayAmount < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
                   {formatMoney(latestDayAmount, true)}
@@ -102,12 +115,14 @@ export function PlayerStats({ stats, normalizedTransactions }: PlayerStatsProps)
     <div className="space-y-6 animate-in fade-in">
       <header className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Swords className="text-emerald-500" />
-            交锋战绩
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            看看谁是你的专属财神爷，谁又是你的命中宿敌
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Swords className="text-emerald-500" />
+              交锋战绩
+            </h1>
+          </div>
+          <p className="text-gray-500 text-sm mt-2">
+            看看谁是你的专属财神爷，谁又是你的命中宿敌。点击下方玩家卡片可切换「单日/连打」统计模式。
           </p>
         </div>
 

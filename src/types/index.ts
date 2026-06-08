@@ -9,6 +9,7 @@ export interface Transaction {
   account?: string;
   direction?: string;
   status?: string;
+  sessionDate?: string;
 }
 
 export interface DailyStat {
@@ -17,6 +18,7 @@ export interface DailyStat {
   loss: number;
   count: number;
   records: Transaction[];
+  label?: string;
 }
 
 export interface PlayerStat {
