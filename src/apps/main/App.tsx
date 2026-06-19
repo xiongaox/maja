@@ -206,9 +206,18 @@ export default function MahjongTracker() {
     updateMergeRules(prev => prev.map(rule => {
       if (rule.id !== ruleId) return rule;
       const newAliases = rule.aliases.filter(a => a !== alias);
-      if (newAliases.length === 0) return null as any;
       return { ...rule, aliases: newAliases };
-    }).filter(Boolean));
+    }));
+  }, [updateMergeRules]);
+
+  const handleEnsureMergeRule = useCallback((targetName: string) => {
+    updateMergeRules(prev => {
+      const existingIndex = prev.findIndex(rule => rule.targetName === targetName);
+      if (existingIndex >= 0) {
+        return prev;
+      }
+      return [...prev, { id: `rule-${Date.now()}`, targetName, aliases: [] }];
+    });
   }, [updateMergeRules]);
 
   // 文件上传与解析
@@ -575,7 +584,7 @@ export default function MahjongTracker() {
               onUpdateGender={(id, gender) => updateMergeRules(prev => prev.map(r => r.id === id ? { ...r, gender } : r))}
               onClearMergeRules={() => updateMergeRules([])}
               onFilterChange={updateFilterOptions}
-              onEnsureMergeRule={handleAddWhitelist} // Just passing it over, you may rename if needed
+              onEnsureMergeRule={handleEnsureMergeRule}
               suggestedNames={suggestedNames}
               originalNames={originalNames}
             />
