@@ -231,6 +231,15 @@ export function calculateDailyStats(transactions: Transaction[]): Record<string,
       const start = dates[0];
       const end = dates[dates.length - 1];
       stat.label = `${start} 至 ${end.substring(5)}`;
+      
+      // 为合并天数添加占位符
+      for (let i = 1; i < dates.length; i++) {
+        stats[dates[i]] = { 
+          net: 0, win: 0, loss: 0, count: 0, records: [], 
+          isMerged: true, 
+          mergedInto: start 
+        };
+      }
     } else {
       stat.label = dates[0];
     }

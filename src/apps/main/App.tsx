@@ -127,8 +127,8 @@ export default function MahjongTracker() {
   }, [finalTransactions]);
 
   const dailyStats = useMemo(() => {
-    return calculateDailyStats(finalTransactions);
-  }, [finalTransactions]);
+    return calculateDailyStats(pipelineResult.final);
+  }, [pipelineResult.final]);
 
   // 获取建议的白名单名字（基于筛选后的数据）
   const suggestedNames = useMemo(() => {

@@ -43,7 +43,32 @@ export function CalendarView({ dailyStats, isAdmin, onRemoveTransaction }: Calen
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const dayData = dailyStats[dateStr];
-      const isSelected = selectedDay === dateStr;
+      const isSelected = selectedDay === dateStr || (dayData?.isMerged && selectedDay === dayData.mergedInto);
+
+      if (dayData?.isMerged && dayData.mergedInto) {
+        const primaryData = dailyStats[dayData.mergedInto];
+        const isPrimarySelected = selectedDay === dayData.mergedInto;
+        const mergeBgClass = primaryData.net >= 0 
+          ? 'bg-emerald-50/40 border border-emerald-100/30' 
+          : 'bg-rose-50/40 border border-rose-100/30';
+
+        days.push(
+          <div
+            key={dateStr}
+            onClick={() => setSelectedDay(dayData.mergedInto!)}
+            className={`h-16 sm:h-20 md:h-28 relative flex flex-col items-center justify-center cursor-pointer rounded-2xl transition-all duration-300 ${isPrimarySelected ? 'opacity-80 scale-[0.98]' : 'hover:bg-slate-100/50'} ${mergeBgClass}`}
+            title={`数据已合并至 ${dayData.mergedInto}`}
+          >
+            <span className={`absolute top-1.5 left-2 md:top-2 md:left-3 text-xs md:text-sm font-bold text-gray-400`}>
+              {day}
+            </span>
+            <div className={`w-full h-full flex items-center justify-center opacity-30 ${primaryData.net >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              <div className="w-6 h-1.5 rounded-full bg-current"></div>
+            </div>
+          </div>
+        );
+        continue;
+      }
 
       let amountSign = '';
       let amountBadgeClass = '';

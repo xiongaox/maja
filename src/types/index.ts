@@ -19,6 +19,8 @@ export interface DailyStat {
   count: number;
   records: Transaction[];
   label?: string;
+  isMerged?: boolean;
+  mergedInto?: string;
 }
 
 export interface PlayerStat {
