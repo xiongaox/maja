@@ -543,6 +543,8 @@ export default function MahjongTracker() {
               isUploading={isUploading}
               whitelistCount={whitelist.length}
               isAdmin={role === 'admin'}
+              mergeAdjacentDays={mergeAdjacentDays}
+              onToggleMergeAdjacent={toggleMergeAdjacent}
             />
           )}
 

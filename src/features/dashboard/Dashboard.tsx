@@ -67,9 +67,11 @@ interface DashboardProps {
   isUploading: boolean;
   whitelistCount: number;
   isAdmin?: boolean;
+  mergeAdjacentDays?: boolean;
+  onToggleMergeAdjacent?: () => void;
 }
 
-export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpload, fileInputRef, isUploading, whitelistCount, isAdmin = true }: DashboardProps) {
+export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpload, fileInputRef, isUploading, whitelistCount, isAdmin = true, mergeAdjacentDays, onToggleMergeAdjacent }: DashboardProps) {
   const chartData = React.useMemo(() => {
     return Object.entries(dailyStats)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -154,25 +156,31 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
         <>
           {/* Overview Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-sm relative overflow-hidden text-white">
-          <div className="absolute top-4 right-4 bg-white/20 p-2 rounded-full text-white">
-            <Calendar size={24} />
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <p className="text-sm font-medium text-emerald-50">{stats.latestDayLabel}</p>
-            {normalizedTransactions.length > 0 && !stats.isActuallyToday && (
-              <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full text-emerald-50">
-                {stats.latestDayDisplayDate}
-              </span>
-            )}
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold tracking-tight">
-              {formatMoney(stats.latestDayNet, true)}
-            </span>
-            <span className="text-emerald-100 font-medium">元</span>
-          </div>
-        </div>
+            <div 
+              onClick={onToggleMergeAdjacent}
+              className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-sm relative overflow-hidden text-white cursor-pointer active:scale-[0.98] transition-all hover:shadow-md group"
+              title="点击切换单日/连打合并统计"
+            >
+              <div className="absolute top-4 right-4 bg-white/20 p-2 rounded-full text-white transition-transform group-hover:scale-110">
+                <Calendar size={24} />
+              </div>
+              <div className="relative z-10 pr-12">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <p className="text-sm font-medium text-emerald-50">{stats.latestDayLabel}</p>
+                  {normalizedTransactions.length > 0 && !stats.isActuallyToday && (
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full text-emerald-50 shrink-0">
+                      {stats.latestDayDisplayDate}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-4xl font-bold tracking-tight">
+                    {formatMoney(stats.latestDayNet, true)}
+                  </span>
+                  <span className="text-emerald-100 font-medium">元</span>
+                </div>
+              </div>
+            </div>
 
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
           <div className="absolute top-4 right-4 bg-gray-50 p-2 rounded-full text-gray-400"><DollarSign size={24} /></div>
