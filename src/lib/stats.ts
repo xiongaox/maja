@@ -170,7 +170,7 @@ export function calculateStats(transactions: Transaction[]): Stats {
   });
 
   // 赢得最多的一局 (maxRoundWin)
-  let maxRoundWin: { winAmount: number; lossAmount: number; date: string; txs: Transaction[] } | null = null;
+  let maxRoundWin: Array<{ winAmount: number; lossAmount: number; date: string; txs: Transaction[] }> | null = null;
   rounds.forEach(round => {
     const winTxs = round.txs.filter(t => t.amount > 0);
     const lossTxs = round.txs.filter(t => t.amount < 0);
@@ -179,13 +179,20 @@ export function calculateStats(transactions: Transaction[]): Stats {
     const lossAmount = lossTxs.reduce((sum, t) => sum + t.amount, 0); // 负数
     
     if (winAmount > 0) {
-      if (!maxRoundWin || winAmount > maxRoundWin.winAmount) {
-        maxRoundWin = {
+      if (!maxRoundWin || winAmount > maxRoundWin[0].winAmount) {
+        maxRoundWin = [{
           winAmount,
           lossAmount,
           date: round.txs[0].date.substring(0, 16),
           txs: round.txs
-        };
+        }];
+      } else if (winAmount === maxRoundWin[0].winAmount) {
+        maxRoundWin.push({
+          winAmount,
+          lossAmount,
+          date: round.txs[0].date.substring(0, 16),
+          txs: round.txs
+        });
       }
     }
   });

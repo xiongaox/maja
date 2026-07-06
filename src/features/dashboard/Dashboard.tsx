@@ -254,31 +254,67 @@ export function Dashboard({ stats, normalizedTransactions, dailyStats, onFileUpl
         />
         <FunFactCard 
           title="单局最高" icon={Award} iconColor="emerald"
-          dateStr={stats.funFacts.maxRoundWin?.date.substring(5, 16)}
+          dateStr={stats.funFacts.maxRoundWin && stats.funFacts.maxRoundWin.length > 1 ? `${stats.funFacts.maxRoundWin[0].date.substring(5, 16)} 等` : stats.funFacts.maxRoundWin?.[0]?.date.substring(5, 16)}
         >
-          <div className="text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight group relative cursor-help">
-            {stats.funFacts.maxRoundWin ? formatMoney(stats.funFacts.maxRoundWin.winAmount, true) : formatMoney(0)}<span className="text-base md:text-sm xl:text-base font-normal text-gray-400 ml-0.5">元</span>
-            {stats.funFacts.maxRoundWin && (
-              <div className="hidden group-hover:block absolute right-0 sm:left-0 top-full pt-2 w-64 z-50">
-                <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left font-normal">
-                  <div className="mb-2 font-bold text-gray-300">包含的账单 ({stats.funFacts.maxRoundWin.txs.length}笔)：</div>
-                  <div className="max-h-56 overflow-y-auto pr-2 space-y-1.5 custom-scrollbar">
-                    {stats.funFacts.maxRoundWin.txs.map(t => (
-                      <div key={t.id} className="flex justify-between items-center">
-                        <span className="text-gray-400"><span className="text-gray-200">{t.displayName || t.name}</span></span>
-                        <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
-                          {formatMoney(t.amount, true)}
-                        </span>
+          <>
+            <div className={`text-3xl md:text-2xl xl:text-3xl font-bold text-gray-900 tracking-tight ${stats.funFacts.maxRoundWin && stats.funFacts.maxRoundWin.length === 1 ? 'group relative cursor-help' : ''}`}>
+              {stats.funFacts.maxRoundWin ? formatMoney(stats.funFacts.maxRoundWin[0].winAmount, true) : formatMoney(0)}<span className="text-base md:text-sm xl:text-base font-normal text-gray-400 ml-0.5">元</span>
+              {stats.funFacts.maxRoundWin && stats.funFacts.maxRoundWin.length === 1 && (
+              <div className="hidden group-hover:block absolute right-0 sm:left-0 top-full pt-2 w-60 z-50">
+                <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left font-normal max-h-72 overflow-y-auto custom-scrollbar">
+                  {stats.funFacts.maxRoundWin.map((round, idx) => (
+                    <div key={idx} className={idx > 0 ? "mt-4 pt-3 border-t border-gray-700/50" : ""}>
+                      <div className="mb-2 font-bold text-gray-300 flex justify-between items-center">
+                        <span>{round.date} ({round.txs.length}笔)</span>
+                        {round.lossAmount < 0 && <span className="text-rose-400 font-normal">带付 {round.lossAmount}</span>}
+                      </div>
+                      <div className="space-y-1.5">
+                        {round.txs.map(t => (
+                          <div key={t.id} className="flex justify-between items-center">
+                            <span className="text-gray-400"><span className="text-gray-200">{t.displayName || t.name}</span></span>
+                            <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
+                              {formatMoney(t.amount, true)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            </div>
+            {stats.funFacts.maxRoundWin && stats.funFacts.maxRoundWin.length > 1 && (
+              <div className="text-xl md:text-lg xl:text-xl font-bold text-emerald-500 text-right group relative cursor-help">
+                x{stats.funFacts.maxRoundWin.length}
+                <div className="hidden group-hover:block absolute right-0 top-full pt-2 w-60 z-50">
+                  <div className="bg-gray-900 text-white text-xs p-3 rounded-xl shadow-xl text-left font-normal max-h-72 overflow-y-auto custom-scrollbar">
+                    {stats.funFacts.maxRoundWin.map((round, idx) => (
+                      <div key={idx} className={idx > 0 ? "mt-4 pt-3 border-t border-gray-700/50" : ""}>
+                        <div className="mb-2 font-bold text-gray-300 flex justify-between items-center">
+                          <span>{round.date} ({round.txs.length}笔)</span>
+                          {round.lossAmount < 0 && <span className="text-rose-400 font-normal">带付 {round.lossAmount}</span>}
+                        </div>
+                        <div className="space-y-1.5">
+                          {round.txs.map(t => (
+                            <div key={t.id} className="flex justify-between items-center">
+                              <span className="text-gray-400"><span className="text-gray-200">{t.displayName || t.name}</span></span>
+                              <span className={t.amount > 0 ? "text-emerald-400" : "text-rose-400"}>
+                                {formatMoney(t.amount, true)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
             )}
-          </div>
-          {stats.funFacts.maxRoundWin && stats.funFacts.maxRoundWin.lossAmount < 0 && (
+          </>
+          {stats.funFacts.maxRoundWin && stats.funFacts.maxRoundWin.length === 1 && stats.funFacts.maxRoundWin[0].lossAmount < 0 && (
             <div className="text-[11px] font-medium text-rose-500">
-              带付 {formatMoney(stats.funFacts.maxRoundWin.lossAmount)}
+              带付 {formatMoney(stats.funFacts.maxRoundWin[0].lossAmount)}
             </div>
           )}
         </FunFactCard>

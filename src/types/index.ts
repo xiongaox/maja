@@ -36,7 +36,7 @@ export interface FunFacts {
   maxLossStreak: { count: number; amount: number; startDate: string; endDate: string; txs: Transaction[] };
   maxSingleLoss: { amount: number; date: string; name: string } | null;
   maxSingleWin: { amount: number; date: string; name: string } | null;
-  maxRoundWin: { winAmount: number; lossAmount: number; date: string; txs: Transaction[] } | null;
+  maxRoundWin: Array<{ winAmount: number; lossAmount: number; date: string; txs: Transaction[] }> | null;
 }
 
 export interface Stats {
