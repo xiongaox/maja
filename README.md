@@ -1,73 +1,104 @@
-# React + TypeScript + Vite
+# 雀神记账本
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个免注册的多人麻将战绩共享工具。创建一个空间后，管理员可以导入微信或支付宝账单、整理玩家名称并调整筛选规则；持有分享链接的其他人可随时查看战绩。
 
-Currently, two official plugins are available:
+## 功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- 按空间 ID 隔离数据，分享链接格式为 `/?id=<space-id>`。
+- 使用 6 位数字 PIN 区分管理员和访客权限。
+- 导入 `.csv`、`.xlsx` 或 `.xls` 格式的微信/支付宝账单。
+- 按 `交易时间 + 交易对方 + 金额` 精确去重，重复导入不会重复计入。
+- 通过「搭子合并」将同一玩家的多个收付款名称归并为一个显示名称。
+- 按交易类型、收支方向与金额区间筛选账单，并使用收付款白名单收敛统计范围。
+- 提供仪表盘、玩家交锋榜、日历流水、趋势图，以及连胜/连败、单局最高等统计。
+- 可将连续自然日的交易合并为一次会话统计；该偏好保存在当前浏览器。
+- 支持导出配置、过滤后的用户数据和完整原始数据，并可从 JSON 备份恢复。
 
-## React Compiler
+## 使用方式
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. 访问首页，设置至少 4 位的空间名称和 6 位数字 PIN。
+2. 进入空间后，在仪表盘上传账单文件。
+3. 在「数据配置」中按需设置筛选条件、搭子合并和白名单。
+4. 在「空间同步与备份」中复制链接发给其他人。
 
-## Expanding the ESLint configuration
+访客可以查看仪表盘、交锋战绩和历史流水。只有输入正确 PIN 的管理员可以导入、删除、同步或修改配置。
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+> PIN 仅用于保护该空间的编辑权限，不应使用重要账号或支付密码。
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 账单导入规则
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+解析器会在文件前 50 行中查找含有「交易对方」或「对方」的表头，并读取时间、交易类型、交易对方、金额及收支方向字段。
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- 支持微信或支付宝导出的 Excel/CSV 账单，只要表头包含上述字段。
+- 支出保存为负数，收入保存为正数。
+- 金额为 `0`、缺少交易对方、金额或可识别时间的记录会跳过。
+- 微信账单中的私有区表情字符会替换为可读占位文本，避免导入失败。
+- 去重保留相同交易的出现次数。例如两条完全相同的真实交易会保留；重复导入时只跳过已经存在的对应次数。
+
+默认筛选范围为交易类型「扫二维码付款、二维码付款、商户消费、二维码收款」，收入和支出均包含，金额范围为 `1` 至 `200` 元。管理员可在应用内修改这些条件。
+
+## 数据处理顺序
+
+原始交易依次经过以下处理：
+
+1. 搭子合并：别名映射为目标名称。
+2. 条件筛选：按类型、方向和金额范围过滤。
+3. 白名单：白名单为空时显示全部；启用白名单后，仅显示已启用名称和搭子合并规则的目标名称。
+4. 会话合并：可选，将相邻自然日的交易归入连续会话的第一天。
+
+完整备份会保存所有底层流水；「用户数据」备份保存已过滤和合并后的结果，恢复后不一定能还原被过滤的原始流水。
+
+## 本地开发
+
+要求：Node.js 20 或更高版本。
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+开发服务器默认运行在 `http://localhost:8848`。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+本地 Vite 开发环境没有 API 服务时，应用会自动使用浏览器 `localStorage` 模拟空间数据，键名为 `tx_<space-id>` 和 `cfg_<space-id>`。这仅适用于本机调试，不会与其他设备同步。
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+构建命令会先执行 TypeScript 项目构建，再生成静态产物。
+
+## 云端部署
+
+生产环境的接口实现位于 `functions/api/`，用于读写空间交易和配置。接口依赖 Cloudflare KV 绑定：
+
+```text
+MAJA_KV
+```
+
+需要为部署项目创建 KV namespace，并将其绑定为 `MAJA_KV`；否则访问空间数据时接口会返回绑定缺失错误。数据以 `tx_<space-id>` 和 `cfg_<space-id>` 两个键保存，配置中的 PIN 不会在读取空间数据时返回给客户端。
+
+仓库包含 Cloudflare Pages Functions 源码和 `npm run deploy` 脚本，但当前没有提交 Wrangler 配置文件或 KV namespace 配置。部署前请根据目标 Cloudflare 账户补充相应的 Wrangler/Pages 配置，再执行：
+
+```bash
+npm run deploy
+```
+
+`vercel.json` 只提供前端路由回退规则；若部署到 Vercel，还需要为 `/api/*` 提供与 `functions/api/` 等价的服务端实现和 KV 存储绑定。
+
+## 项目结构
+
+```text
+src/
+  apps/main/          应用入口、首页与空间界面
+  features/           仪表盘、交锋榜、日历与数据配置
+  components/         权限、备份与通用界面组件
+  lib/parser.ts       Excel/CSV 账单解析与去重
+  lib/pipeline.ts     名称合并、筛选、白名单与会话合并
+  lib/stats.ts        统计计算
+  store/              Zustand 空间状态与云端同步
+functions/api/        Cloudflare Pages API 路由
+```
+
+## 技术栈
+
+React 19、TypeScript、Vite、Zustand、Recharts、SheetJS (`xlsx`)、Lucide React、Cloudflare Pages Functions 与 KV。
